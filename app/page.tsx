@@ -1,7 +1,13 @@
 import Image from "next/image";
 import AuthButton from "./components/AuthButton";
+import TableTest from "./components/TableTest";
+import { auth } from "@clerk/nextjs/server"; // Importación estándar para Clerk 7
 
-export default function Home() {
+export default async function Home() {
+  // Obtenemos el userId en el servidor para activar el renderizado de la tabla
+  const { userId } = await auth();
+  console.log("USER ID:", userId);
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       
@@ -26,9 +32,15 @@ export default function Home() {
               app/page.tsx
             </code>.
           </li>
-
           <li>Save and see your changes instantly.</li>
         </ol>
+
+        {/* Solo si hay un usuario detectado, se monta el componente de la DB */}
+        {userId && (
+          <div className="w-full border border-zinc-800 rounded-lg p-4 bg-zinc-900/20">
+            <TableTest />
+          </div>
+        )}
 
         <div className="flex gap-4 items-center flex-col sm:flex-row">
           <a

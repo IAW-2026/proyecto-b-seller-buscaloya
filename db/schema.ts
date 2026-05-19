@@ -12,5 +12,5 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   price: real("price").notNull(),
   stock: integer("stock").notNull(),
-  storeId: text("store_id").references(() => stores.id).notNull(),
+  storeId: text("store_id").references(() => stores.id).notNull()
 });

@@ -51,25 +51,20 @@ export async function POST(req: Request) {
   // 5. Manage the event based on its type. In this case, we listen for 'user.created' to create a new store in our database.
   const eventType = evt.type;
 
-if (eventType === 'user.created') {
-    const data = evt.data as any;
-    const id = data.id;
-    const first_name = data.first_name || "";
-    const last_name = data.last_name || "";
-    const email = data.email_addresses?.[0]?.email_address || "";
+  if (eventType === 'user.created') {
+    const { id, email_addresses, first_name, last_name } = evt.data;
+    const primaryEmail = email_addresses?.[0]?.email_address || "";
+    
+    // Inserts a new store in the database using the Clerk user information as a reference. The store ID is the same as the Clerk user ID for easy association.
+    await db.insert(stores).values({
+      id: id as string, 
+      name: `${first_name || 'Tienda de'} ${last_name || ''}`.trim(),
+      email: primaryEmail,
+      category: "General", 
+    });
 
-    try {
-      await db.insert(stores).values({
-        id: id,
-        name: `${first_name} ${last_name}`.trim() || "Nueva Tienda",
-        email: email,
-        category: "General",
-      });
-      console.log(`✅ Tienda creada: ${id}`);
-    } catch (dbErr) {
-      console.error("Error DB:", dbErr);
-    }
+    console.log(`Tienda creada para el usuario ${id}`);
   }
 
-  return new Response('OK', { status: 200 });
+  return new Response('Webhook procesado', { status: 200 })
 }

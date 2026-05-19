@@ -4,14 +4,15 @@ import { stores, products } from "@/db/schema";
 
 export async function GET() {
   try {
-    // 1. Insertar una tienda de prueba
+    // Inserts a new store
     const [newStore] = await db.insert(stores).values({
+      id: `user_test_${Date.now()}`,
       name: "Tienda de Computación",
-      email: `tienda-${Date.now()}@test.com`, // Email único para evitar errores
+      email: `tienda-${Date.now()}@test.com`, 
       category: "Tecnología",
     }).returning();
 
-    // 2. Insertar un producto asociado a esa tienda
+    // 2. Inserts a new product associated with the newly created store
     const [newProduct] = await db.insert(products).values({
       name: "Monitor Gamer 144hz",
       price: 250.99,

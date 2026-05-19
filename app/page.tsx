@@ -1,12 +1,11 @@
+//Main landing page of the Seller App.
 import Image from "next/image";
 import AuthButton from "./components/AuthButton";
-import TableTest from "./components/TableTest";
-import { auth } from "@clerk/nextjs/server"; // Importación estándar para Clerk 7
+import { auth } from "@clerk/nextjs/server";
+import Link from "next/link";
 
 export default async function Home() {
-  // Obtenemos el userId en el servidor para activar el renderizado de la tabla
   const { userId } = await auth();
-  console.log("USER ID:", userId);
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
@@ -15,7 +14,7 @@ export default async function Home() {
         <AuthButton />
       </header>
 
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+      <main className="flex flex-col gap-8 row-start-2 items-center">
         <Image
           className="dark:invert"
           src="/next.svg"
@@ -25,39 +24,31 @@ export default async function Home() {
           priority
         />
 
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        {/* Solo si hay un usuario detectado, se monta el componente de la DB */}
-        {userId && (
-          <div className="w-full border border-zinc-800 rounded-lg p-4 bg-zinc-900/20">
-            <TableTest />
-          </div>
-        )}
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Deploy now
-          </a>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <h1 className="text-2xl font-bold tracking-tight">Seller Module</h1>
+          <p className="text-zinc-500 text-sm max-w-[300px]">
+            Gestiona tus tiendas y productos de forma centralizada.
+          </p>
         </div>
+
+        {/* SI ESTÁ LOGUEADO: Solo el botón, nada de tablas feas */}
+        {userId ? (
+          <Link
+            href="/stores"
+            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-blue-600 text-white gap-2 hover:bg-blue-700 text-sm sm:text-base h-10 sm:h-12 px-8 font-bold shadow-lg"
+          >
+            Entrar al Panel de Tiendas →
+          </Link>
+        ) : (
+          /* SI NO ESTÁ LOGUEADO: Mensaje de invitación */
+          <p className="text-sm text-zinc-400 bg-zinc-900/50 px-4 py-2 rounded-full border border-zinc-800">
+            Inicia sesión para comenzar
+          </p>
+        )}
       </main>
 
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <span className="flex items-center gap-2 text-xs text-zinc-500 italic">
-          IAW 2026 - Seller Module
-        </span>
+        <span className="text-xs text-zinc-600 italic">IAW 2026 - Seller Module</span>
       </footer>
     </div>
   );

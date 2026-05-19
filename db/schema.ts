@@ -1,7 +1,7 @@
 import { pgTable, serial, text, integer, uuid, real } from "drizzle-orm/pg-core";
 
 export const stores = pgTable("stores", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").unique().notNull(),
   category: text("category").notNull(),
@@ -12,5 +12,5 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   price: real("price").notNull(),
   stock: integer("stock").notNull(),
-  storeId: integer("store_id").references(() => stores.id).notNull(),
+  storeId: text("store_id").references(() => stores.id).notNull(),
 });

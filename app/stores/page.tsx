@@ -1,3 +1,4 @@
+//Page that lists all the stores in the database, with a link to each store's catalog page.
 import { db } from "@/db";
 import { stores } from "@/db/schema";
 import Link from "next/link";

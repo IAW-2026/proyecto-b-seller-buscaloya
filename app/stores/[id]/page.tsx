@@ -1,3 +1,4 @@
+//Page for showing the catalog of a specific store, accessed by clicking on the store card in the stores list page.
 import { db } from "@/db";
 import { stores, products } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -9,16 +10,15 @@ export default async function StoreInventoryPage({
 }: { 
   params: Promise<{ id: string }> 
 }) {
-  // En Next.js 15+, params es una Promise
   const { id } = await params;
 
-  // 1. Buscamos la tienda específica
+  // Fetch the store details using the provided ID
   const store = await db.select().from(stores).where(eq(stores.id, id)).then(res => res[0]);
 
-  // Si no existe la tienda, mostramos error 404
+  // If the store doesn't exist, we show a 404 page
   if (!store) return notFound();
 
-  // 2. Traemos los productos asociados a este ID de tienda
+  // Fetch the inventory of products for this store
   const inventory = await db.select().from(products).where(eq(products.storeId, id));
 
   return (

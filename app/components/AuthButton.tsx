@@ -6,13 +6,20 @@ import {
   useAuth,
 } from "@clerk/nextjs";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 export default function AuthButton() {
   const { userId, isLoaded } = useAuth();
+  const router = useRouter();
 
-  // Evita hydration mismatch
-  if (!isLoaded) {
-    return null;
-  }
+  useEffect(() => {
+    if (isLoaded) {
+      router.refresh();
+    }
+  }, [userId, isLoaded, router]);
+
+  if (!isLoaded) return null;
 
   if (userId) {
     return <UserButton />;

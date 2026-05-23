@@ -1,3 +1,4 @@
+/*Testing the connection to the database and fetching data from the "products" table.*/
 import { db } from "@/db";
 import { products } from "@/db/schema"; 
 

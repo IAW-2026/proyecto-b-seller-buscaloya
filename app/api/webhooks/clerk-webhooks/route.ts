@@ -65,10 +65,9 @@ export async function POST(req: Request) {
       category: "General", 
     })
     .onConflictDoUpdate({
-      target: stores.email, // Esta es la columna que tiene el UNIQUE constraint
+      target: stores.email, 
       set: {
         name: fullName,
-        // Puedes agregar más campos aquí si quieres que se sincronicen
       }
     });
 

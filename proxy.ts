@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const isPublicRoute = createRouteMatcher(['/api/webhooks/clerk(.*)', '/sign-in(.*)', '/sign-up(.*)', '/']);
+const isPublicRoute = createRouteMatcher(['/api/webhooks/clerk(.*)', '/sign-in(.*)', '/sign-up(.*)', '/','/stores/(.*)']);
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
@@ -9,7 +9,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   // SI YA ESTÁ LOGUEADO Y ESTÁ EN LA LANDING ('/'), LO DESVIAMOS AL DESTINO
   if (userId && req.nextUrl.pathname === '/') {
-    const role = (sessionClaims?.publicMetadata as { role?: string })?.role;
+    const role = (sessionClaims?.metadata as { role?: string })?.role;
     
     if (role === 'system_admin' || role === 'admin') {
       return NextResponse.redirect(new URL('/admin/stores', req.url));
@@ -24,7 +24,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   // PROTECCIÓN ADMIN
   if (isAdminRoute(req)) {
-    const role = (sessionClaims?.publicMetadata as { role?: string })?.role;
+    const role = (sessionClaims?.metadata as { role?: string })?.role;
     if (role !== 'system_admin' && role !== 'admin') {
       return NextResponse.redirect(new URL('/', req.url));
     }

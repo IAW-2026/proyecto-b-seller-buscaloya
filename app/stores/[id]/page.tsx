@@ -15,7 +15,7 @@ export default async function StoreDashboardPage({ params }: StorePageProps) {
   const { id: storeId } = await params;
   const { userId, sessionClaims } = await auth();
   
-  const role = (sessionClaims?.publicMetadata as { role?: string })?.role;
+  const role = (sessionClaims?.metadata as { role?: string })?.role;
   const isAdmin = role === "system_admin" || role === "admin";
   const isOwner = userId === storeId;
 

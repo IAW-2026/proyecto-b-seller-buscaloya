@@ -73,4 +73,6 @@ export async function POST(req: Request) {
     });
 
   console.log(`Tienda sincronizada para el usuario ${id}`);
+  }
+return new Response('Webhook procesado', { status: 200 })
 }

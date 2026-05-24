@@ -1,3 +1,6 @@
+/*This component is a delete button that prompts the user for confirmation before proceeding with the deletion of a store and its products (admin role).
+ It uses client-side rendering to handle the click event and display a confirmation dialog. If the user confirms, the deletion process continues;
+otherwise, it prevents the default action. The button is styled with Tailwind CSS classes for a consistent look and feel. */
 "use client";
 
 export default function DeleteButton() {

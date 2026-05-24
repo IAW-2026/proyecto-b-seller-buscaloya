@@ -1,34 +1,34 @@
+/*This file contains the server actions related to product management, including creating, updating and deleting products.
+These actions are protected to ensure that only authorized users (store owners or admins) can perform these operations.*/
 "use server";
 
 import { db } from "@/db";
 import { products } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { eq, and } from "drizzle-orm";
 
-// Action 1: Guardar o Actualizar un Producto
-export async function saveProductAction(formData: FormData, storeId: string, productId?: string) {
-  const { userId } = await auth();
-  
-  // Seguridad: El que edita/crea debe ser el dueño de la tienda (o podés validar claims si sos admin)
-  if (!userId || userId !== storeId) {
-    throw new Error("No autorizado para modificar este catálogo");
+export async function createProductAction(formData: FormData, storeId: string) {
+  const { userId, sessionClaims } = await auth();
+  const role = (sessionClaims?.metadata as { role?: string })?.role;
+  const isAdmin = role === "system_admin" || role === "admin";
+
+  if (!userId) throw new Error("No estás autenticado");
+
+  // Validamos que sea el dueño o un admin
+  if (userId !== storeId && !isAdmin) {
+    throw new Error("No tienes permiso para agregar productos a esta tienda");
   }
 
+  // Extraemos los datos del formulario
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
-  const price = parseFloat(formData.get("price") as string) || 0;
-  const stock = parseInt(formData.get("stock") as string) || 0;
-  const imageUrl = formData.get("imageUrl") as string || null;
+  // Convertimos precio y stock a números
+  const price = parseFloat(formData.get("price") as string);
+  const stock = parseInt(formData.get("stock") as string, 10);
+  const imageUrl = formData.get("imageUrl") as string;
 
-  if (productId) {
-    // Si pasamos un ID, es una EDICIÓN
-    await db
-      .update(products)
-      .set({ name, description, price, stock, imageUrl })
-      .where(and(eq(products.id, productId), eq(products.storeId, storeId)));
-  } else {
-    // Si no hay ID, es una CREACIÓN
+  try {
     await db.insert(products).values({
       storeId,
       name,
@@ -37,23 +37,58 @@ export async function saveProductAction(formData: FormData, storeId: string, pro
       stock,
       imageUrl,
     });
-  }
 
-  // Refrescamos la caché del servidor instantáneamente para que impacte en la UI
-  revalidatePath(`/stores/${storeId}`);
+    // Refrescamos la página de la tienda para que aparezca el nuevo producto
+    revalidatePath(`/stores/${storeId}`);
+  } catch (error) {
+    console.error("Error al crear producto:", error);
+    throw new Error("No se pudo crear el producto");
+  }
 }
 
-// Action 2: Eliminar un Producto
 export async function deleteProductAction(productId: string, storeId: string) {
-  const { userId } = await auth();
-  
-  if (!userId || userId !== storeId) {
-    throw new Error("No autorizado");
+  const { userId, sessionClaims } = await auth();
+  const role = (sessionClaims?.metadata as { role?: string })?.role;
+  const isAdmin = role === "system_admin" || role === "admin";
+
+  if (!userId || (userId !== storeId && !isAdmin)) {
+    throw new Error("No tienes permiso");
   }
 
-  await db
-    .delete(products)
-    .where(and(eq(products.id, productId), eq(products.storeId, storeId)));
+  try {
+    await db.delete(products)
+      .where(and(eq(products.id, productId), eq(products.storeId, storeId)));
+    revalidatePath(`/stores/${storeId}`);
+  } catch (error) {
+    console.error("Error eliminando producto:", error);
+    throw new Error("No se pudo eliminar");
+  }
+}
 
-  revalidatePath(`/stores/${storeId}`);
+export async function updateProductAction(formData: FormData, productId: string, storeId: string) {
+  const { userId, sessionClaims } = await auth();
+  const role = (sessionClaims?.metadata as { role?: string })?.role;
+  const isAdmin = role === "system_admin" || role === "admin";
+
+  if (!userId || (userId !== storeId && !isAdmin)) {
+    throw new Error("No tienes permiso");
+  }
+
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const price = parseFloat(formData.get("price") as string);
+  const stock = parseInt(formData.get("stock") as string, 10);
+  const imageUrl = formData.get("imageUrl") as string;
+
+  try {
+    await db.update(products)
+      .set({ name, description, price, stock, imageUrl })
+      .where(and(eq(products.id, productId), eq(products.storeId, storeId)));
+
+    revalidatePath(`/stores/${storeId}`);
+    revalidatePath(`/stores/${storeId}/products/${productId}/edit`);
+  } catch (error) {
+    console.error("Error actualizando producto:", error);
+    throw new Error("No se pudo actualizar");
+  }
 }

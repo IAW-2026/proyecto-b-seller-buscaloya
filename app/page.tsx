@@ -1,3 +1,7 @@
+/*This is the landing page of the app.
+It checks if the user is authenticated and redirects them to the apropiate page 
+based on their role (admin or regular seller user).
+If the user is not authenticated, it shows a welcome message and prompts them to log in. */
 import Image from "next/image";
 import AuthButton from "./components/AuthButton";
 import { auth } from "@clerk/nextjs/server";

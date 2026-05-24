@@ -1,3 +1,4 @@
+/*This component automatically refreshes the page at regular intervals */
 "use client";
 
 import { useEffect } from "react";

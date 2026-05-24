@@ -1,3 +1,4 @@
+/*This is the admin role page for managing all the stores in the platform */
 import { db } from '@/db';
 import { stores } from '@/db/schema';
 import Link from 'next/link';

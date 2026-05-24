@@ -1,7 +1,11 @@
+/* This component is responsible for rendering the authentication button. 
+It checks if the user is logged in or not and displays the appropriate button (Sign In, Sign Up or User Button). 
+It also handles refreshing the page when the authentication state changes.*/
 "use client";
 
 import {
   SignInButton,
+  SignUpButton,
   UserButton,
   useAuth,
 } from "@clerk/nextjs";
@@ -26,10 +30,18 @@ export default function AuthButton() {
   }
 
   return (
-    <SignInButton mode="modal">
-      <button className="rounded-full bg-black px-4 py-2 text-sm text-white dark:bg-white dark:text-black border border-zinc-200 dark:border-zinc-800 transition-opacity hover:opacity-80">
-        Sign In
-      </button>
-    </SignInButton>
+    <div className="flex flex-row items-center gap-3">
+      <SignInButton mode="modal">
+        <button className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 text-xs transition-all cursor-pointer shadow-md">
+          Sign In
+        </button>
+      </SignInButton>
+
+      <SignUpButton mode="modal">
+        <button className="rounded-xl border border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 font-semibold px-4 py-2 text-xs transition-all cursor-pointer shadow-sm">
+          Sign Up
+        </button>
+      </SignUpButton>
+    </div>
   );
 }

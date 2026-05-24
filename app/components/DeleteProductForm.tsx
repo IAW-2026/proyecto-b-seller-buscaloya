@@ -1,0 +1,24 @@
+"use client";
+
+import { deleteProductAction } from "@/app/actions/products";
+
+export default function DeleteProductForm({ productId, storeId }: { productId: string, storeId: string }) {
+  const deleteAction = deleteProductAction.bind(null, productId, storeId);
+
+  return (
+    <form action={deleteAction}>
+      <button 
+        type="submit" 
+        className="bg-red-600/90 hover:bg-red-500 text-white p-2 rounded-lg text-xs shadow-md backdrop-blur-sm transition-all"
+        title="Eliminar Producto"
+        onClick={(e) => {
+          if (!window.confirm('¿Estás seguro de que querés eliminar este producto?')) {
+            e.preventDefault();
+          }
+        }}
+      >
+        🗑️
+      </button>
+    </form>
+  );
+}

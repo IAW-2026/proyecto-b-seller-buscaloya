@@ -51,20 +51,27 @@ export async function POST(req: Request) {
   // 5. Manage the event based on its type. In this case, we listen for 'user.created' to create a new store in our database.
   const eventType = evt.type;
 
-  if (eventType === 'user.created') {
-    const { id, email_addresses, first_name, last_name } = evt.data;
-    const primaryEmail = email_addresses?.[0]?.email_address || "";
+ if (eventType === 'user.created') {
+  const { id, email_addresses, first_name, last_name } = evt.data;
+  const primaryEmail = email_addresses?.[0]?.email_address || "";
+  const fullName = `${first_name || 'Tienda de'} ${last_name || ''}`.trim();
     
-    // Inserts a new store in the database using the Clerk user information as a reference. The store ID is the same as the Clerk user ID for easy association.
-    await db.insert(stores).values({
+  // Usamos upsert para evitar errores de duplicidad
+  await db.insert(stores)
+    .values({
       id: id as string, 
-      name: `${first_name || 'Tienda de'} ${last_name || ''}`.trim(),
+      name: fullName,
       email: primaryEmail,
       category: "General", 
+    })
+    .onConflictDoUpdate({
+      target: stores.email, 
+      set: {
+        name: fullName,
+      }
     });
 
-    console.log(`Tienda creada para el usuario ${id}`);
+  console.log(`Tienda sincronizada para el usuario ${id}`);
   }
-
-  return new Response('Webhook procesado', { status: 200 })
+return new Response('Webhook procesado', { status: 200 })
 }

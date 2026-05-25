@@ -7,19 +7,20 @@ import { useActionState } from "react";
 import { updateStoreAction } from "@/app/actions/stores";
 import Link from "next/link";
 
-// Tipamos las props para que TypeScript no se queje
 interface EditStoreFormProps {
   store: {
     name: string;
     email: string;
     category: string;
     imageUrl: string | null;
+    address: string | null;
+    lat: number | null;
+    lng: number | null;
   };
   storeId: string;
 }
 
 export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
-  // Conectamos la acción del servidor con un estado local para saber si fue exitoso
   const [state, action, isPending] = useActionState(
     async (prevState: any, formData: FormData) => {
       await updateStoreAction(formData, storeId);
@@ -30,7 +31,7 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
 
   return (
     <form action={action} className="space-y-4">
-      {/* Cartelito de éxito */}
+      {/*Success sign */}
       {state.success && (
         <div className="bg-green-500/10 border border-green-500 text-green-400 p-4 rounded-lg text-sm font-bold text-center">
           ✓ Cambios guardados correctamente
@@ -76,7 +77,42 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
         />
       </div>
 
-      {/* Botones de acción */}
+      <div>
+        <label className="block text-sm font-medium text-slate-400">Dirección de retiro</label>
+        <input 
+          name="address" 
+          defaultValue={store.address || ""} 
+          placeholder="Ej: San Martín 123, Ciudad"
+          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white"
+        />
+      </div>
+
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-slate-400">Latitud</label>
+          <input 
+            type="number" 
+            step="any" /* Permite decimales */
+            name="lat" 
+            defaultValue={store.lat || ""} 
+            placeholder="-34.6037"
+            className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white" 
+          />
+        </div>
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-slate-400">Longitud</label>
+          <input 
+            type="number" 
+            step="any"
+            name="lng" 
+            defaultValue={store.lng || ""} 
+            placeholder="-58.3816"
+            className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white" 
+          />
+        </div>
+      </div>
+
+      {/*Action buttons */}
       <div className="flex gap-4 pt-4 mt-4">
         <Link 
           href={`/stores/${storeId}`}

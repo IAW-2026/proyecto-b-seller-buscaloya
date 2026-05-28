@@ -1,4 +1,5 @@
 import { pgTable, serial, text, integer, uuid, real, pgEnum } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 // --- ENUMS ---
 export const packageStatusEnum = pgEnum("package_status", [
@@ -55,3 +56,12 @@ export const packageItems = pgTable("package_items", {
   quantity: integer("quantity").notNull(),
   priceAtPurchase: real("price_at_purchase").notNull(), 
 });
+
+
+//---Relations---
+export const packagesRelations = relations(packages, ({ one }) => ({
+  store: one(stores, {
+    fields: [packages.storeId],
+    references: [stores.id],
+  }),
+}));

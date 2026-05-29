@@ -2,12 +2,14 @@
 import { db } from "@/db";
 import { stores, products } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import AutoRefresh from "@/app/components/AutoRefresh";
 import DeleteProductForm from "@/app/components/DeleteProductForm";
+import { SignOutButton } from "@clerk/nextjs";
+import LogoutButton from "@/app/components/LogoutButton";
 
 interface StorePageProps {
   params: Promise<{ id: string }>;
@@ -16,6 +18,7 @@ interface StorePageProps {
 export default async function StoreDashboardPage({ params }: StorePageProps) {
   const { id: storeId } = await params;
   const { userId, sessionClaims } = await auth();
+  const user = await currentUser();
   
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   const isAdmin = role === "system_admin" || role === "admin";
@@ -28,11 +31,33 @@ export default async function StoreDashboardPage({ params }: StorePageProps) {
 
   // 2. Access control: if the store doesn't exist, it could be either because it's still being created 
   // (webhook in progress) or because it truly doesn't exist. 
-  // If the user is the owner, we assume it's the former and show a loading state. 
-  // If it's not the owner, we throw a 404 immediately.
+  // We use Clerk's timestamps to safely differentiate a Sign Up from a Sign In.
   if (!storeData) {
-    if (isOwner) {
-      return <AutoRefresh />;
+    if (isOwner || storeId.startsWith("user_")) {
+      
+      // We check if it's a Sign Up by comparing Clerk's timestamps.
+      // We give a 5-second (5000 ms) margin for any internal Clerk latency.
+      const isSignUp = user && user.lastSignInAt && (user.lastSignInAt - user.createdAt < 5000);
+
+      if (isSignUp) {
+        // If it's a new account, we assume the webhook is in progress and show a loading state.
+        return <AutoRefresh />;
+      } else {
+// If it's an old account without a store, we throw an error screen and bounce them to the landing.
+// If it's an old account without a store, we throw an error screen and bounce them to the landing.
+return (
+  <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-center p-6">
+    <div className="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md shadow-2xl">
+      <span className="text-5xl mb-4 block">🚫</span>
+      <h1 className="text-xl font-bold text-red-400 mb-2">Acceso Denegado</h1>
+      <p className="text-slate-400 mb-8 text-sm">
+        Tu cuenta de usuario existe, pero no tenés ninguna tienda asociada en nuestro sistema.
+      </p>
+      <LogoutButton />
+    </div>
+  </div>
+);
+      }
     } else {
       notFound();
     }
@@ -41,7 +66,13 @@ export default async function StoreDashboardPage({ params }: StorePageProps) {
   if (!isOwner && !isAdmin) {
     notFound();
   }
-  
+
+  //Forces the owner to complete the onboarding if they haven't filled out the address and location info,
+  //ensuring that all stores have this critical information before being accessed.
+  if (isOwner && (!storeData.address || !storeData.lat || !storeData.lng)) {
+    redirect(`/stores/${storeId}/edit?onboarding=true`);
+  }
+
   // 3. Fetching the products of the store (only if the store exists and the user has access)
   const storeProducts = await db
     .select()

@@ -11,7 +11,6 @@ import { revalidatePath } from "next/cache";
 export async function updateStoreAction(formData: FormData, storeId: string) {
   const { userId } = await auth();
 
-  // Security check: Only the store owner can edit the store
   if (!userId || userId !== storeId) {
     throw new Error("No tienes permiso para editar esta tienda");
   }
@@ -20,6 +19,11 @@ export async function updateStoreAction(formData: FormData, storeId: string) {
   const email = formData.get("email") as string;
   const category = formData.get("category") as string;
   const imageUrl = formData.get("imageUrl") as string;
+  const address = formData.get("address") as string;
+  const latString = formData.get("lat") as string;
+  const lngString = formData.get("lng") as string;
+  const lat = latString ? parseFloat(latString) : null;
+  const lng = lngString ? parseFloat(lngString) : null;
 
   await db
     .update(stores)
@@ -28,6 +32,9 @@ export async function updateStoreAction(formData: FormData, storeId: string) {
       email,
       category,
       imageUrl,
+      address,
+      lat,
+      lng,
     })
     .where(eq(stores.id, storeId));
 

@@ -1,11 +1,13 @@
 /*This component is responsible for rendering the form to edit a store's details. 
 It uses the useActionState hook to handle the form submission and display a success message when the update is successful. 
-The form includes fields for the store's name, email, category, and image URL, and buttons to save changes or go back to the store's page.*/
+The form includes fields for the store's name, email, category, an interactive Mapbox map, and buttons to save changes or go back to the store's page.*/
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { updateStoreAction } from "@/app/actions/stores";
 import Link from "next/link";
+import Map, { Marker } from "react-map-gl/mapbox";
+import "mapbox-gl/dist/mapbox-gl.css"; 
 
 interface EditStoreFormProps {
   store: {
@@ -21,6 +23,10 @@ interface EditStoreFormProps {
 }
 
 export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
+  // Initializes the latitude and longitude state with the store's current coordinates or defaults to Buenos Aires if not set.
+  const [lat, setLat] = useState<number>(store.lat ?? -34.6037);
+  const [lng, setLng] = useState<number>(store.lng ?? -58.3816);
+
   const [state, action, isPending] = useActionState(
     async (prevState: any, formData: FormData) => {
       await updateStoreAction(formData, storeId);
@@ -29,8 +35,21 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
     { success: false }
   );
 
+  // Captures clicks on the map to update the latitude and longitude state, which are then included in the form submission via hidden inputs.
+  const handleMapClick = (event: any) => {
+    const { lng: clickedLng, lat: clickedLat } = event.lngLat;
+    setLat(clickedLat);
+    setLng(clickedLng);
+  };
+
   return (
     <form action={action} className="space-y-4">
+      {/* Inputs ocultos pero reactivos: se alimentan del estado del mapa 
+        y empaquetan las coordenadas dentro del FormData automáticamente.
+      */}
+      <input type="hidden" name="lat" value={lat} />
+      <input type="hidden" name="lng" value={lng} />
+
       {/*Success sign */}
       {state.success && (
         <div className="bg-green-500/10 border border-green-500 text-green-400 p-4 rounded-lg text-sm font-bold text-center">
@@ -43,7 +62,7 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
         <input 
           name="name" 
           defaultValue={store.name} 
-          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded"
+          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white"
           required 
         />
       </div>
@@ -53,7 +72,7 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
         <input 
           name="email" 
           defaultValue={store.email} 
-          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded"
+          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white"
           required 
         />
       </div>
@@ -63,7 +82,7 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
         <input 
           name="category" 
           defaultValue={store.category} 
-          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded"
+          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white"
           required 
         />
       </div>
@@ -73,7 +92,7 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
         <input 
           name="imageUrl" 
           defaultValue={store.imageUrl || ""} 
-          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded"
+          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white"
         />
       </div>
 
@@ -87,29 +106,30 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
         />
       </div>
 
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-400">Latitud</label>
-          <input 
-            type="number" 
-            step="any" /* Permite decimales */
-            name="lat" 
-            defaultValue={store.lat || ""} 
-            placeholder="-34.6037"
-            className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white" 
-          />
+      {/* --- SECCIÓN NUEVA: MAPBOX MAP INTERACTIVO --- */}
+      <div className="pt-2">
+        <label className="block text-sm font-medium text-slate-400 mb-2">
+          Ubicación en el mapa (Hacé clic para posicionar el local)
+        </label>
+        <div className="h-[320px] w-full rounded-lg overflow-hidden border border-slate-700 shadow-inner relative">
+          <Map
+            mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+            initialViewState={{
+              longitude: lng,
+              latitude: lat,
+              zoom: 13
+            }}
+            mapStyle="mapbox://styles/mapbox/dark-v11" 
+            onClick={handleMapClick}
+            cursor="crosshair"
+          >
+            {/* El marcador toma el color ámbar para respetar los estilos de tus botones */}
+            <Marker longitude={lng} latitude={lat} color="#f59e0b" />
+          </Map>
         </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-400">Longitud</label>
-          <input 
-            type="number" 
-            step="any"
-            name="lng" 
-            defaultValue={store.lng || ""} 
-            placeholder="-58.3816"
-            className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white" 
-          />
-        </div>
+        <p className="text-[11px] text-slate-500 mt-1 text-right italic">
+          Coordenadas fijadas: {lat.toFixed(6)}, {lng.toFixed(6)}
+        </p>
       </div>
 
       {/*Action buttons */}

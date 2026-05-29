@@ -1,3 +1,6 @@
+/*This component is a simple logout button that uses the Clerk authentication library to sign the user out and redirect them to the homepage. 
+The button is used in the case where a user has an account but does not have an associated store, allowing them to easily log out and
+return to the home page.*/
 "use client";
 
 import { useClerk } from "@clerk/nextjs";

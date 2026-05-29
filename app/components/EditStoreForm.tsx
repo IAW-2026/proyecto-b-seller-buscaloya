@@ -26,6 +26,7 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
   // Initializes the latitude and longitude state with the store's current coordinates or defaults to Buenos Aires if not set.
   const [lat, setLat] = useState<number>(store.lat ?? -34.6037);
   const [lng, setLng] = useState<number>(store.lng ?? -58.3816);
+  const [address, setAddress] = useState<string>(store.address ?? "");
 
   const [state, action, isPending] = useActionState(
     async (prevState: any, formData: FormData) => {
@@ -36,10 +37,27 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
   );
 
   // Captures clicks on the map to update the latitude and longitude state, which are then included in the form submission via hidden inputs.
-  const handleMapClick = (event: any) => {
+const handleMapClick = async (event: any) => {
     const { lng: clickedLng, lat: clickedLat } = event.lngLat;
     setLat(clickedLat);
     setLng(clickedLng);
+
+    // ESTO es lo que te falta para que el nombre de la calle cambie
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${clickedLng}&latitude=${clickedLat}&access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
+      );
+      const data = await response.json();
+      
+      if (data.features && data.features.length > 0) {
+        // Esto actualiza el nombre de la calle en tu input
+        // Asegurate de tener un setAddress en tu estado o usar la referencia del input
+        // Si usas un estado 'address', poné esto:
+        setAddress(data.features[0].properties.full_address);
+      }
+    } catch (e) {
+      console.error("Error al obtener la calle:", e);
+    }
   };
 
   return (
@@ -97,14 +115,16 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-400">Dirección de retiro</label>
-        <input 
+       <label className="block text-sm font-medium text-slate-400">Dirección de retiro</label>
+       <input 
           name="address" 
-          defaultValue={store.address || ""} 
+          value={address} // Ahora el input está atado al estado
+          onChange={(e) => setAddress(e.target.value)} // Permite que el usuario edite a mano
           placeholder="Ej: San Martín 123, Ciudad"
           className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white"
         />
-      </div>
+      </div>  
+      
 
       {/* --- SECCIÓN NUEVA: MAPBOX MAP INTERACTIVO --- */}
       <div className="pt-2">

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
 
 export default function TestDashboardPage() {
   //Buyer App states to handle the response from the Seller App after simulating a purchase. 
@@ -9,6 +10,10 @@ export default function TestDashboardPage() {
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  //To get the user ID for the mock payload, we use the useUser hook from Clerk to access the authenticated user's information.
+  //This allows us to simulate a real purchase with an actual user ID from our authentication system.
+  const { user } = useUser();
 
   //Payment (webhook) confirmation states to simulate the Buyer App confirming a payment and sending the result back to the Seller App. 
   //This will allow us to test the payment flow end-to-end. 
@@ -24,11 +29,30 @@ export default function TestDashboardPage() {
   const [dispatchResponse, setDispatchResponse] = useState<any>(null);
   const [dispatchLoading, setDispatchLoading] = useState(false);
   const [dispatchError, setDispatchError] = useState<string | null>(null);
-  //---PAYLOAD MOCK BUYER APP---
+ 
+  //To store the list of available packages for dispatching 
+  const [availablePackages, setAvailablePackages] = useState<string[]>([]);
+
+
+  //--- Simulate Purchase (Buyer App) ---
+  // Function to simulate the purchase process by sending the mock payload to the Seller App's API route for creating orders.
+  // It handles the response and updates the state accordingly to display the result on the page.
+  const handleSimulatePurchase = async () => {
+    if (!user || !user.id) {
+      setError("Usuario no detectado. Esperá a que cargue la sesión.");
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    setResponse(null);
+    setPaymentResponse(null);
+
+     //---PAYLOAD MOCK BUYER APP---
   // This is the mock payload that simulates what the Buyer App would send to the Seller App when a user confirms a purchase.
   // Replace the store_id and product_id with actual IDs from your database to test the flow end-to-end.
   const mockPayload = {
-    buyer_id: "user_test_clerk_123",
+    buyer_id:user.id,
     buyer_address: {
       city: "Bahía Blanca",
       street: "Alem 123",
@@ -56,14 +80,6 @@ export default function TestDashboardPage() {
     ]
   };
 
-  //--- Simulate Purchase (Buyer App) ---
-  // Function to simulate the purchase process by sending the mock payload to the Seller App's API route for creating orders.
-  // It handles the response and updates the state accordingly to display the result on the page.
-  const handleSimulatePurchase = async () => {
-    setLoading(true);
-    setError(null);
-    setResponse(null);
-    setPaymentResponse(null);
     try {
       const res = await fetch("/api/seller/orders", {
         method: "POST",
@@ -72,12 +88,21 @@ export default function TestDashboardPage() {
       });
 
       const data = await res.json();
-
+      console.log("Respuesta del servidor:", data);
       if (!res.ok) {
         throw new Error(data.error || "Error desconocido en el servidor");
       }
 
       setResponse(data);
+      if (data.packages) {
+      // Extracts the package IDs from the response to populate the available packages for dispatching in the next step.
+      const packageIds = data.packages.map((p: any) => p.package_id);
+      setAvailablePackages(packageIds);
+  
+      // Optionally, we can set the first package ID in the input state to make it easier to test the dispatch flow
+      //after payment confirmation.
+      if (packageIds.length > 0) setDispatchPackageId(packageIds[0]);
+}
       //If the response contains a payment_order_id, we set it in the input state to simulate the payment confirmation later.
       if (data.payment_order_id) {
         setPaymentOrderIdInput(data.payment_order_id);
@@ -103,10 +128,13 @@ const handleSimulatePayment = async () => {
     setPaymentResponse(null);
 
     try {
-      // Calls the API route to update the payment status, simulating what the Payments App would do after validating the payment.
       const res = await fetch(`/api/seller/orders/${paymentOrderIdInput}/payment-status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          //We include the Authorization header with the service token to pass the security check in the API route.
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SERVICE_TOKEN}` 
+        },
         body: JSON.stringify({
           payment_order_id: paymentOrderIdInput,
           status: paymentStatus
@@ -255,16 +283,28 @@ const handleSimulatePayment = async () => {
 
         <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Package ID (UUID de tu tabla packages)</label>
-            <input 
-              type="text" 
-              value={dispatchPackageId}
-              onChange={(e) => setDispatchPackageId(e.target.value)}
-              placeholder="uuid del paquete..."
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-            />
-          </div>
-
+           <label className="block text-sm font-medium text-slate-400 mb-1">Package ID</label>
+           {availablePackages.length > 0 ? (
+           <select 
+           value={dispatchPackageId}
+           onChange={(e) => setDispatchPackageId(e.target.value)}
+           className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-orange-500"
+           >
+           <option value="">Seleccioná un paquete...</option>
+           {availablePackages.map((id) => (
+           <option key={id} value={id}>{id}</option>
+          ))}
+           </select>
+           ) : (
+           <input 
+           type="text" 
+           value={dispatchPackageId}
+           onChange={(e) => setDispatchPackageId(e.target.value)}
+           placeholder="o pegá el uuid manualmente..."
+           className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white"
+          />
+          )}
+        </div>
           <button
             onClick={handleDispatch}
             disabled={dispatchLoading || !dispatchPackageId}

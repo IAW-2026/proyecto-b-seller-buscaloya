@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { packages, stores } from "@/db/schema";
 import { eq } from "drizzle-orm";
-
+import { auth } from "@clerk/nextjs/server";
 
 //--- Contract with Delivery App  (endpoint: POST /delivery-requests) ---
 interface DeliveryRequestPayload {
@@ -42,10 +42,15 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  //1. Check if the user is authenticated
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { id: packageId } = await params;
 
-    // 1. Looks up the package and related store info in the database
+    // 2. Looks up the package and related store info in the database
     const pkg = await db.query.packages.findFirst({
       where: eq(packages.id, packageId),
       with: { store: true }
@@ -59,14 +64,14 @@ export async function POST(
       return NextResponse.json({ error: "El paquete no está en preparación." }, { status: 400 });
     }
 
-    // 2. Parses buyer address if it's stored as JSON, otherwise uses it as is
+    // 3. Parses buyer address if it's stored as JSON, otherwise uses it as is
     let formattedBuyerAddress = pkg.buyerAddress;
     try {
       const addr = JSON.parse(pkg.buyerAddress);
       formattedBuyerAddress = `${addr.street}, ${addr.city}`;
     } catch { /* If parsing fails, keep the original string */ }
 
-    // 3. Builds the payload for the Delivery App according to the contract, using package and store data
+    // 4. Builds the payload for the Delivery App according to the contract, using package and store data
     const deliveryPayload: DeliveryRequestPayload = {
       paquete_id: pkg.id,
       requested_by: "seller",
@@ -85,10 +90,10 @@ export async function POST(
       otp_required: true
     };
 
-    // 4. Calls the mock function to simulate sending the request to the Delivery App and getting a response
+    // 5. Calls the mock function to simulate sending the request to the Delivery App and getting a response
     const deliveryResponse = await mockDeliveryRequest(deliveryPayload);
 
-    // 5. Updates the package status to "READY_TO_PICKUP" and saves the delivery request ID in the database
+    // 6. Updates the package status to "READY_TO_PICKUP" and saves the delivery request ID in the database
     const updated = await db
       .update(packages)
       .set({ 

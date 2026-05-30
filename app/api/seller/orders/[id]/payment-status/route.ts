@@ -8,6 +8,16 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+
+  // 1. Security: Validate that the request comes from the Payments App using a token in the Authorization header.
+  //This is a simple approach for demonstration purposes; in a production environment.
+  const authHeader = req.headers.get("Authorization");
+  const token = authHeader?.replace("Bearer ", "");
+
+  if (token !== process.env.NEXT_PUBLIC_SERVICE_TOKEN) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     // 1. Obtais the payment order ID from the URL and the status from the request body
     const { id: paymentOrderIdFromUrl } = await params;

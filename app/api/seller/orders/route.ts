@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { stores, products, packages, packageItems } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server"
 
 //--- Delivery Quote Types ---
 interface Location {
@@ -93,9 +94,21 @@ async function mockPaymentOrder(payload: PaymentOrderRequest): Promise<PaymentOr
 
 // Main handler for POST /seller/orders endpoint
 export async function POST(req: Request) {
+  // 1. Secure the route: only authenticated users can access it.
+  const { userId } = await auth();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const { buyer_id, buyer_address, stores: cartStores } = body;
+    // 2. Basic validation of the request body and access control: the buyer_id in the request must match
+    //the authenticated user's ID.
+    if (buyer_id !== userId) {
+      return NextResponse.json({ error: "Forbidden: No puedes comprar a nombre de otro usuario" }, { status: 403 });
+    }
 
     if (!buyer_id || !buyer_address || !cartStores || !Array.isArray(cartStores)) {
       return NextResponse.json({ error: "Estructura del carrito inválida" }, { status: 400 });
@@ -106,18 +119,18 @@ export async function POST(req: Request) {
     const paymentItems = []; //To build the items array for the Payments App request
     const packagesData = []; //To store package info in memory before inserting into DB and building the response
 
-    // 1. Iterate over the stores in the cart to process each package separately
+    // 3. Iterate over the stores in the cart to process each package separately
     for (const storeCart of cartStores) {
       const { store_id, items } = storeCart;
 
-      // Buscar datos de la tienda (para coordenadas y nombre)
+      // Looks for the store in the database to get its details (like location for delivery quote and name for the response).
       const storeData = await db.query.stores.findFirst({
         where: eq(stores.id, store_id),
       });
 
       if (!storeData) throw new Error(`Tienda ${store_id} no encontrada`);
 
-      // 2.Calculate delivery quote for this package
+      // 4.Calculate delivery quote for this package
      const quote = await mockDeliveryQuote({
         pickup_location: { lat: storeData.lat!, lng: storeData.lng! },
         dropoff_location: { lat: buyer_address.lat, lng: buyer_address.lng }
@@ -127,7 +140,7 @@ export async function POST(req: Request) {
       let packageSubtotal = 0;
       const currentPackageItems = [];
 
-      // 3. Process each item in the package: get product details, calculate subtotals, and prepare data for Payments and DB
+      // 5. Process each item in the package: get product details, calculate subtotals, and prepare data for Payments and DB
       for (const item of items) {
         const productData = await db.query.products.findFirst({
           where: eq(products.id, item.product_id),
@@ -169,7 +182,7 @@ export async function POST(req: Request) {
 
     const globalTotal = globalSubtotal + globalDeliveryCost;
 
-    // 4.Generate the payment order in the Payments App
+    // 6.Generate the payment order in the Payments App
     const paymentPayload = {
       buyer_id,
       items: paymentItems,
@@ -183,7 +196,7 @@ export async function POST(req: Request) {
     const paymentResponse = await mockPaymentOrder(paymentPayload);
     const globalPaymentOrderId = paymentResponse.order_id;
 
-    // 5. Save the order and package details in the local database
+    // 7. Save the order and package details in the local database
     const finalPackagesResponse = [];
 
     for (const pkg of packagesData) {
@@ -219,7 +232,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // 6. Return the response to the Buyer App according to the defined contract
+    // 8. Return the response to the Buyer App according to the defined contract
     return NextResponse.json({
       payment_order_id: globalPaymentOrderId,
       amount: globalTotal,

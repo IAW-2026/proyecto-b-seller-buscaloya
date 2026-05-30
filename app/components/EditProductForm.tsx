@@ -2,13 +2,20 @@
 It uses the useActionState hook to handle the form submission and display a success message when the update is successful.
 The form includes fields for the product's name, description, price, stock, and image URL, and buttons to save changes or
 go back to the store's page. */
+/*It also includes a button to generate a product description using an AI model,
+which sends a request to the /api/seller/generate-description endpoint and updates the description field with the response.*/
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { updateProductAction } from "@/app/actions/products";
 import Link from "next/link";
 
 export default function EditProductForm({ product, storeId }: { product: any, storeId: string }) {
+  // Estados para controlar el nombre (para enviarlo a la IA) y la descripción (para que la IA la rellene)
+  const [productName, setProductName] = useState(product.name);
+  const [description, setDescription] = useState(product.description || "");
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const [state, action, isPending] = useActionState(
     async (prevState: any, formData: FormData) => {
       await updateProductAction(formData, product.id, storeId);
@@ -16,6 +23,29 @@ export default function EditProductForm({ product, storeId }: { product: any, st
     },
     { success: false }
   );
+
+  const handleGenerateDescription = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!productName) return;
+
+    setIsGenerating(true);
+    try {
+      const res = await fetch("/api/seller/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productName }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setDescription(data.description);
+    } catch (error: any) {
+      alert(error.message || "Hubo un error al generar la descripción");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <form action={action} className="space-y-4">
@@ -27,12 +57,34 @@ export default function EditProductForm({ product, storeId }: { product: any, st
 
       <div>
         <label className="block text-sm font-medium text-slate-400">Nombre del producto</label>
-        <input name="name" defaultValue={product.name} className="w-full p-2 mt-1 bg-slate-950 border border-slate-700 rounded text-white" required />
+        <input 
+          name="name" 
+          value={productName}
+          onChange={(e) => setProductName(e.target.value)}
+          className="w-full p-2 mt-1 bg-slate-950 border border-slate-700 rounded text-white" 
+          required 
+        />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-400">Descripción</label>
-        <textarea name="description" defaultValue={product.description || ""} className="w-full p-2 mt-1 bg-slate-950 border border-slate-700 rounded text-white" rows={3} />
+        <div className="flex justify-between items-end mb-1">
+          <label className="block text-sm font-medium text-slate-400">Descripción</label>
+          <button 
+            type="button"
+            onClick={handleGenerateDescription}
+            disabled={isGenerating || !productName}
+            className="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded disabled:opacity-50 transition-colors shadow-sm"
+          >
+            {isGenerating ? "Generando..." : "✨ Autocompletar con IA"}
+          </button>
+        </div>
+        <textarea 
+          name="description" 
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full p-2 bg-slate-950 border border-slate-700 rounded text-white" 
+          rows={3} 
+        />
       </div>
 
       <div className="flex gap-4">

@@ -44,7 +44,6 @@ export default async function StoreDashboardPage({ params }: StorePageProps) {
         return <AutoRefresh />;
       } else {
 // If it's an old account without a store, we throw an error screen and bounce them to the landing.
-// If it's an old account without a store, we throw an error screen and bounce them to the landing.
 return (
   <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-center p-6">
     <div className="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md shadow-2xl">
@@ -158,7 +157,7 @@ return (
                       >
                         ✏️
                       </Link>
-                      {/* Nuestro nuevo Client Component para eliminar */}
+                      {/* Nuevo Client Component para eliminar */}
                       <DeleteProductForm productId={product.id} storeId={storeId} />
                       
                     </div>

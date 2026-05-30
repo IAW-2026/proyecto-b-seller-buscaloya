@@ -5,15 +5,23 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { stores, products } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+
+  //1. Secure the route: only authenticated users can access it.
+  const { userId } = await auth();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { id } = await params;
 
-    // 1. Look for the store with the given ID
+    // 2. Look for the store with the given ID
     const storeData = await db.query.stores.findFirst({
       where: eq(stores.id, id),
     });

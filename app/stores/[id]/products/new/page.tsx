@@ -2,21 +2,51 @@
 It uses the useActionState hook to handle the form submission and display a success message when the product is created succesfully.*/
 "use client";
 
-import { useActionState, use } from "react";
+import { useActionState, use, useState } from "react";
 import { createProductAction } from "@/app/actions/products";
 import Link from "next/link";
 
 export default function NewProductPage({ params }: { params: Promise<{ id: string }> }) {
-  // En Client Components usamos React.use() para desenvolver la promesa
   const { id: storeId } = use(params);
+
+  // Estados para la IA
+  const [productName, setProductName] = useState("");
+  const [description, setDescription] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const [state, action, isPending] = useActionState(
     async (prevState: any, formData: FormData) => {
       await createProductAction(formData, storeId);
+      // Opcional: limpiar el formulario después de crear exitosamente
+      setProductName("");
+      setDescription("");
       return { success: true };
     },
     { success: false }
   );
+
+  const handleGenerateDescription = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!productName) return;
+
+    setIsGenerating(true);
+    try {
+      const res = await fetch("/api/seller/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productName }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setDescription(data.description);
+    } catch (error: any) {
+      alert(error.message || "Hubo un error al generar la descripción");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto p-8 bg-slate-900 text-white rounded-lg mt-10 shadow-lg border border-slate-800">
@@ -31,12 +61,34 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
 
         <div>
           <label className="block text-sm font-medium text-slate-400">Nombre del producto</label>
-          <input name="name" className="w-full p-2 mt-1 bg-slate-950 border border-slate-700 rounded text-white" required />
+          <input 
+            name="name" 
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            className="w-full p-2 mt-1 bg-slate-950 border border-slate-700 rounded text-white" 
+            required 
+          />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-400">Descripción</label>
-          <textarea name="description" className="w-full p-2 mt-1 bg-slate-950 border border-slate-700 rounded text-white" rows={3} />
+          <div className="flex justify-between items-end mb-1">
+            <label className="block text-sm font-medium text-slate-400">Descripción</label>
+            <button 
+              type="button"
+              onClick={handleGenerateDescription}
+              disabled={isGenerating || !productName}
+              className="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded disabled:opacity-50 transition-colors shadow-sm"
+            >
+              {isGenerating ? "Generando..." : "✨ Autocompletar con IA"}
+            </button>
+          </div>
+          <textarea 
+            name="description" 
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full p-2 bg-slate-950 border border-slate-700 rounded text-white" 
+            rows={3} 
+          />
         </div>
 
         <div className="flex gap-4">

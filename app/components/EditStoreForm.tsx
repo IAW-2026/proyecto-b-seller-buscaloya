@@ -37,12 +37,11 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
   );
 
   // Captures clicks on the map to update the latitude and longitude state, which are then included in the form submission via hidden inputs.
-const handleMapClick = async (event: any) => {
+  const handleMapClick = async (event: any) => {
     const { lng: clickedLng, lat: clickedLat } = event.lngLat;
     setLat(clickedLat);
     setLng(clickedLng);
 
-    // ESTO es lo que te falta para que el nombre de la calle cambie
     try {
       const response = await fetch(
         `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${clickedLng}&latitude=${clickedLat}&access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
@@ -50,9 +49,6 @@ const handleMapClick = async (event: any) => {
       const data = await response.json();
       
       if (data.features && data.features.length > 0) {
-        // Esto actualiza el nombre de la calle en tu input
-        // Asegurate de tener un setAddress en tu estado o usar la referencia del input
-        // Si usas un estado 'address', poné esto:
         setAddress(data.features[0].properties.full_address);
       }
     } catch (e) {
@@ -60,78 +56,84 @@ const handleMapClick = async (event: any) => {
     }
   };
 
+  // Clases CSS actualizadas para fondo CLARO (Inputs blancos/grises con texto oscuro)
+  const inputClasses = "w-full p-3 mt-1.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 focus:bg-white transition-all shadow-sm";
+
   return (
-    <form action={action} className="space-y-4">
-      {/* Inputs ocultos pero reactivos: se alimentan del estado del mapa 
-        y empaquetan las coordenadas dentro del FormData automáticamente.
-      */}
+    <form action={action} className="space-y-6">
+      {/* Inputs ocultos */}
       <input type="hidden" name="lat" value={lat} />
       <input type="hidden" name="lng" value={lng} />
 
-      {/*Success sign */}
+      {/* Success sign */}
       {state.success && (
-        <div className="bg-green-500/10 border border-green-500 text-green-400 p-4 rounded-lg text-sm font-bold text-center">
-          ✓ Cambios guardados correctamente
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Cambios guardados correctamente
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-medium text-slate-400">Nombre de la tienda</label>
-        <input 
-          name="name" 
-          defaultValue={store.name} 
-          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white"
-          required 
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500">Nombre de la tienda</label>
+          <input 
+            name="name" 
+            defaultValue={store.name} 
+            className={inputClasses}
+            required 
+          />
+        </div>
+
+        <div>
+          <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500">Categoría</label>
+          <input 
+            name="category" 
+            defaultValue={store.category} 
+            className={inputClasses}
+            required 
+          />
+        </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-400">Email</label>
+        <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500">Email Comercial</label>
         <input 
           name="email" 
           defaultValue={store.email} 
-          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white"
+          className={inputClasses}
           required 
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-400">Categoría</label>
-        <input 
-          name="category" 
-          defaultValue={store.category} 
-          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white"
-          required 
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-400">URL de Imagen</label>
+        <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500">URL de Imagen (Logo/Fachada)</label>
         <input 
           name="imageUrl" 
           defaultValue={store.imageUrl || ""} 
-          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white"
+          className={inputClasses}
+          placeholder="https://ejemplo.com/imagen.jpg"
         />
       </div>
 
-      <div>
-       <label className="block text-sm font-medium text-slate-400">Dirección de retiro</label>
+      <div className="pt-2">
+       <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500">Dirección de retiro</label>
        <input 
           name="address" 
-          value={address} // Ahora el input está atado al estado
-          onChange={(e) => setAddress(e.target.value)} // Permite que el usuario edite a mano
+          value={address} 
+          onChange={(e) => setAddress(e.target.value)} 
           placeholder="Ej: San Martín 123, Ciudad"
-          className="w-full p-2 mt-1 bg-slate-800 border border-slate-700 rounded text-white"
+          className={inputClasses}
         />
       </div>  
       
-
       {/* --- SECCIÓN NUEVA: MAPBOX MAP INTERACTIVO --- */}
       <div className="pt-2">
-        <label className="block text-sm font-medium text-slate-400 mb-2">
+        <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-3">
           Ubicación en el mapa (Hacé clic para posicionar el local)
         </label>
-        <div className="h-[320px] w-full rounded-lg overflow-hidden border border-slate-700 shadow-inner relative">
+        
+        {/* Contenedor del mapa con borde gris sutil y sombra suave */}
+        <div className="h-[350px] w-full rounded-2xl overflow-hidden border-2 border-slate-200 shadow-md relative transition-all hover:border-slate-300">
           <Map
             mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
             initialViewState={{
@@ -139,31 +141,31 @@ const handleMapClick = async (event: any) => {
               latitude: lat,
               zoom: 13
             }}
-            mapStyle="mapbox://styles/mapbox/dark-v11" 
+            mapStyle="mapbox://styles/mapbox/light-v11" 
             onClick={handleMapClick}
             cursor="crosshair"
           >
-            {/* El marcador toma el color ámbar para respetar los estilos de tus botones */}
-            <Marker longitude={lng} latitude={lat} color="#f59e0b" />
+            {/* Marcador rojo */}
+            <Marker longitude={lng} latitude={lat} color="#dc2626" />
           </Map>
         </div>
-        <p className="text-[11px] text-slate-500 mt-1 text-right italic">
-          Coordenadas fijadas: {lat.toFixed(6)}, {lng.toFixed(6)}
+        <p className="text-[10px] text-slate-400 mt-2 text-right font-mono uppercase tracking-widest">
+          Coordenadas: {lat.toFixed(6)}, {lng.toFixed(6)}
         </p>
       </div>
 
-      {/*Action buttons */}
-      <div className="flex gap-4 pt-4 mt-4">
+      {/* Action buttons */}
+      <div className="flex gap-4 pt-6 mt-2 border-t border-slate-100">
         <Link 
           href={`/stores/${storeId}`}
-          className="w-1/3 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded text-center border border-slate-600 transition-colors"
+          className="w-1/3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl text-center border border-slate-300 transition-all shadow-sm hover:shadow-md"
         >
           Volver
         </Link>
         <button 
           type="submit"
           disabled={isPending}
-          className="w-2/3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Guardando..." : "Guardar Cambios"}
         </button>

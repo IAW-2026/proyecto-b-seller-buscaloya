@@ -10,9 +10,13 @@ import { revalidatePath } from "next/cache";
 import { storeSchema } from "@/lib/validations";
 
 export async function updateStoreAction(formData: FormData, storeId: string) {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
+  //Checks if the user is authenticated and has the necessary permissions to edit the store.
+  const metadata = sessionClaims?.metadata as { role?: string };
+  const role = metadata?.role;
+  const isAdmin = role === "system_admin" || role === "admin";
 
-  if (!userId || userId !== storeId) {
+  if (!userId || (userId !== storeId && !isAdmin)) {
     throw new Error("No tienes permiso para editar esta tienda");
   }
 
@@ -39,6 +43,7 @@ export async function updateStoreAction(formData: FormData, storeId: string) {
 
     revalidatePath(`/stores/${storeId}`);
     revalidatePath(`/stores/${storeId}/edit`);
+    revalidatePath(`/admin/stores`);
   } catch (error) {
     console.error("Error al actualizar la tienda:", error);
     throw new Error("No se pudo actualizar la tienda. Verifica los campos.");

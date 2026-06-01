@@ -49,11 +49,13 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
         return <AutoRefresh />;
       } else {
         return (
-          <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-center p-6">
-            <div className="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md shadow-2xl">
-              <span className="text-5xl mb-4 block">🚫</span>
-              <h1 className="text-xl font-bold text-red-400 mb-2">Acceso Denegado</h1>
-              <p className="text-slate-400 mb-8 text-sm">
+          <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-center p-6 overflow-hidden">
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-red-600/10 blur-[120px]" />
+            
+            <div className="relative z-10 bg-white/5 border border-white/10 p-10 rounded-3xl max-w-md shadow-2xl backdrop-blur-xl">
+              <span className="text-6xl mb-6 block drop-shadow-lg grayscale opacity-80">🚫</span>
+              <h1 className="text-2xl font-black text-red-500 mb-3 tracking-tight">Acceso Denegado</h1>
+              <p className="text-gray-400 mb-8 text-sm leading-relaxed">
                 Tu cuenta de usuario existe, pero no tenés ninguna tienda asociada en nuestro sistema.
               </p>
               <LogoutButton />
@@ -91,126 +93,171 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
     .offset(offset);
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-slate-950 text-white min-h-screen">
+    <div className="relative min-h-screen bg-[#0a0a0a] text-white p-6 md:p-12 overflow-hidden">
       
-      {/* --- BARRA SUPERIOR --- */}
-      <div className="flex justify-between items-center mb-6 min-h-[40px]">
-        <div>
-          {isAdmin && (
-            <Link href="/admin/stores" className="inline-block text-sm text-amber-400 hover:underline font-medium">
-              ← Volver al Panel de Control Admin
-            </Link>
-          )}
-        </div>
-        <div className="bg-slate-900 p-1.5 rounded-full border border-slate-800 shadow-sm flex items-center justify-center hover:bg-slate-800 transition-colors">
-          <UserButton />
-        </div>
-      </div>
+      {/* Fondo Premium Oscuro */}
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-red-600/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] rounded-full bg-red-900/10 blur-[100px] pointer-events-none" />
 
-      <header className="flex flex-col md:flex-row items-center gap-6 bg-slate-900 border border-slate-800 p-6 rounded-2xl mb-8 shadow-md">
-        {storeData.imageUrl && (
-          <img src={storeData.imageUrl} alt={storeData.name} className="w-24 h-24 object-cover rounded-xl border border-slate-700" />
-        )}
-        <div className="flex-1 text-center md:text-left">
-          <div className="flex flex-col md:flex-row md:items-center gap-2">
-            <h1 className="text-3xl font-extrabold text-slate-100">{storeData.name}</h1>
-            {isAdmin && <span className="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-bold px-2 py-0.5 rounded uppercase self-center">Modo Editor Admin</span>}
-            {isOwner && <span className="bg-blue-500/10 text-blue-400 border border-blue-500/30 text-xs font-bold px-2 py-0.5 rounded uppercase self-center">Propietario</span>}
-          </div>
-          <p className="text-slate-400 text-sm mt-1">{storeData.category} — <span className="italic">{storeData.email}</span></p>
-        </div>
-        {(isOwner || isAdmin) && (
-          <div className="flex-none">
-            <Link 
-              href={`/stores/${storeId}/edit`} 
-              className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition-all"
-            >
-              Editar Perfil
-            </Link>
-          </div>
-        )}
-      </header>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-slate-200">Catálogo de Productos ({totalProducts})</h2>
-            {(isOwner || isAdmin) && (
-              <Link 
-                href={`/stores/${storeId}/products/new`}
-                className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-3 py-1.5 rounded-lg text-sm font-bold transition-all shadow-sm"
-              >
-                + Nuevo Producto
+      <div className="relative z-10 max-w-6xl mx-auto">
+        
+        {/* --- BARRA SUPERIOR --- */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4 min-h-[40px]">
+          <div>
+            {isAdmin && (
+              <Link href="/admin/stores" className="inline-block text-sm text-gray-400 hover:text-white transition-colors font-medium tracking-wide">
+                ← Volver al Panel Admin
               </Link>
             )}
           </div>
           
-          {storeProducts.length === 0 ? (
-            <p className="text-sm text-slate-500 italic p-4 text-center border border-dashed border-slate-800 rounded-xl">
-              No hay productos en esta página o aún no has cargado ninguno.
-            </p>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {storeProducts.map((product) => (
-                  <div key={product.id} className="relative bg-slate-950 border border-slate-800 p-4 rounded-xl flex flex-col justify-between group">
-                    {(isOwner || isAdmin) && (
-                      <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                        <Link 
-                          href={`/stores/${storeId}/products/${product.id}/edit`}
-                          className="bg-blue-600/90 hover:bg-blue-500 text-white p-2 rounded-lg text-xs shadow-md backdrop-blur-sm transition-all"
-                          title="Editar Producto"
-                        >
-                          ✏️
-                        </Link>
-                        <DeleteProductForm productId={product.id} storeId={storeId} />
-                      </div>
-                    )}
-                    <div>
-                      {product.imageUrl && (
-                        <img src={product.imageUrl} alt={product.name} className="w-full h-32 object-cover rounded-lg mb-3" />
-                      )}
-                      <h3 className="font-bold text-slate-100">{product.name}</h3>
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-2">{product.description || "Sin descripción"}</p>
-                    </div>
-                    <div className="flex items-center justify-between mt-4 pt-2 border-t border-slate-900">
-                      <span className="text-amber-400 font-bold text-sm">${product.price.toFixed(2)}</span>
-                      <span className="text-xs text-slate-500">Stock: {product.stock} u.</span>
-                    </div>
-                  </div>
-                ))}
+          {/* GRUPO DE BOTONES SUPERIOR DERECHO */}
+          <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
+            {(isOwner || isAdmin) && (
+              <Link 
+                href={`/stores/${storeId}/edit`} 
+                className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 text-white border border-white/10 px-5 py-2.5 rounded-full text-sm font-bold transition-all backdrop-blur-md shadow-lg hover:scale-105"
+              >
+                Editar Perfil
+              </Link>
+            )}
+            
+            <div className="flex items-center gap-4 p-2 pl-5 pr-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md shadow-lg">
+              <span className="text-sm font-medium text-gray-300 hidden md:block tracking-wide">
+                {isAdmin ? "Administrador" : "Propietario"}
+              </span>
+              <div className="scale-110">
+                <UserButton />
               </div>
+            </div>
+          </div>
+        </div>
 
-              {/* --- Pagination Controls --- */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-4 mt-8 pt-4 border-t border-slate-800">
-                  <Link
-                    href={`/stores/${storeId}?page=${currentPage - 1}`}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium border ${
-                      currentPage <= 1
-                        ? "bg-slate-950 border-slate-800 text-slate-600 pointer-events-none"
-                        : "bg-slate-800 border-slate-700 text-white hover:bg-slate-700 transition-colors"
-                    }`}
-                  >
-                    ← Anterior
-                  </Link>
-                  <span className="text-sm text-slate-400">
-                    Página {currentPage} de {totalPages}
-                  </span>
-                  <Link
-                    href={`/stores/${storeId}?page=${currentPage + 1}`}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium border ${
-                      currentPage >= totalPages
-                        ? "bg-slate-950 border-slate-800 text-slate-600 pointer-events-none"
-                        : "bg-slate-800 border-slate-700 text-white hover:bg-slate-700 transition-colors"
-                    }`}
-                  >
-                    Siguiente →
-                  </Link>
-                </div>
-              )}
-            </>
+        {/* --- HEADER DE LA TIENDA (Estilo Dark/Tech) --- */}
+        <header className="flex flex-col md:flex-row items-center gap-8 mb-12">
+          {storeData.imageUrl && (
+            <div className="relative">
+              <div className="absolute inset-0 bg-red-500/20 blur-xl rounded-full"></div>
+              <img 
+                src={storeData.imageUrl} 
+                alt={storeData.name} 
+                className="relative w-32 h-32 object-cover rounded-3xl border border-white/10 shadow-2xl" 
+              />
+            </div>
           )}
+          <div className="flex-1 text-center md:text-left">
+            <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
+              <h1 className="text-5xl font-extrabold tracking-tighter text-white">{storeData.name}</h1>
+              <div className="flex gap-2 justify-center">
+                {isAdmin && <span className="bg-white/10 border border-white/20 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest backdrop-blur-sm">Modo Admin</span>}
+                {isOwner && <span className="bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest backdrop-blur-sm">Propietario</span>}
+              </div>
+            </div>
+            <p className="text-gray-400 text-base">
+              <span className="font-medium text-gray-300">{storeData.category}</span> — <span className="italic opacity-80">{storeData.email}</span>
+            </p>
+          </div>
+        </header>
+
+        {/* --- GRID PRINCIPAL --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* EL CUADRADO BLANCO SUAVIZADO (Catálogo) */}
+          <div className="lg:col-span-2 bg-white rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.2)] p-6 md:p-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Catálogo de Productos</h2>
+                <p className="text-slate-500 font-medium text-sm mt-1">{totalProducts} artículos publicados</p>
+              </div>
+              {(isOwner || isAdmin) && (
+                <Link 
+                  href={`/stores/${storeId}/products/new`}
+                  className="bg-slate-900 hover:bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-transform shadow-md hover:shadow-lg hover:scale-105 flex-shrink-0"
+                >
+                  + Nuevo Producto
+                </Link>
+              )}
+            </div>
+            
+            {storeProducts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
+                <span className="text-4xl mb-3 grayscale opacity-60">🍔</span>
+                <p className="text-slate-500 font-medium">No hay productos en esta página o aún no has cargado ninguno.</p>
+              </div>
+            ) : (
+              <>
+                {/* Grilla de productos adaptada al fondo blanco */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {storeProducts.map((product) => (
+                    <div key={product.id} className="relative bg-slate-50 border border-slate-100 p-5 rounded-2xl flex flex-col justify-between group hover:shadow-xl hover:border-slate-200 transition-all">
+                      
+                      {(isOwner || isAdmin) && (
+                        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                          <Link 
+                            href={`/stores/${storeId}/products/${product.id}/edit`}
+                            className="bg-white/90 hover:bg-white text-slate-900 border border-slate-200 p-2 rounded-lg text-xs shadow-md backdrop-blur-sm transition-all"
+                            title="Editar Producto"
+                          >
+                            ✏️
+                          </Link>
+                          {/* El DeleteProductForm resalta bien sobre blanco */}
+                          <div className="bg-white/90 rounded-lg shadow-md backdrop-blur-sm">
+                             <DeleteProductForm productId={product.id} storeId={storeId} />
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        {product.imageUrl && (
+                          <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover rounded-xl mb-4 shadow-sm" />
+                        )}
+                        <h3 className="font-extrabold text-slate-900 text-lg tracking-tight leading-tight">{product.name}</h3>
+                        <p className="text-sm text-slate-500 mt-2 line-clamp-2 leading-relaxed">{product.description || "Sin descripción"}</p>
+                      </div>
+
+                      <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-200/60">
+                        <span className="text-red-600 font-black text-lg">${product.price.toFixed(2)}</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-200/50 px-2.5 py-1 rounded-md">
+                          Stock: {product.stock}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* --- Pagination Controls (Fondo Blanco) --- */}
+                {totalPages > 1 && (
+                  <div className="flex justify-between items-center mt-10 pt-6 border-t border-slate-100">
+                    <Link
+                      href={`/stores/${storeId}?page=${currentPage - 1}`}
+                      className={`px-5 py-2.5 rounded-xl text-sm font-bold border transition-all ${
+                        currentPage <= 1
+                          ? "bg-slate-50 border-slate-200 text-slate-400 pointer-events-none"
+                          : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100 hover:shadow-sm"
+                      }`}
+                    >
+                      ← Anterior
+                    </Link>
+                    <span className="text-sm font-semibold text-slate-500">
+                      Página <span className="text-slate-900">{currentPage}</span> de <span className="text-slate-900">{totalPages}</span>
+                    </span>
+                    <Link
+                      href={`/stores/${storeId}?page=${currentPage + 1}`}
+                      className={`px-5 py-2.5 rounded-xl text-sm font-bold border transition-all ${
+                        currentPage >= totalPages
+                          ? "bg-slate-50 border-slate-200 text-slate-400 pointer-events-none"
+                          : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100 hover:shadow-sm"
+                      }`}
+                    >
+                      Siguiente →
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          
+          {/* El espacio restante de lg:grid-cols-3 queda libre para mantener tu estructura original */}
         </div>
       </div>
     </div>

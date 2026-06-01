@@ -15,7 +15,6 @@ export default function EditProductForm({ product, storeId }: { product: any, st
   const [description, setDescription] = useState(product.description || "");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // La firma es perfecta: recibe (prevState, formData)
   const [state, action, isPending] = useActionState(updateProductAction, { 
     success: false 
   });
@@ -40,104 +39,107 @@ export default function EditProductForm({ product, storeId }: { product: any, st
     }
   };
 
+  // Clases de diseño premium alineadas para fondo claro
+  const inputClasses = "w-full p-3 mt-1.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 focus:bg-white transition-all shadow-sm";
+  const labelClasses = "block text-[11px] font-bold tracking-widest uppercase text-slate-500";
+
   return (
-    <form action={action} className="space-y-4">
-      {/* CAMPOS OCULTOS: Aquí pasamos los IDs para que la Server Action los reciba */}
+    <form action={action} className="space-y-5">
       <input type="hidden" name="productId" value={product.id} />
       <input type="hidden" name="storeId" value={storeId} />
 
       {/* Éxito */}
       {state?.success && (
-        <div className="bg-blue-500/10 border border-blue-500 text-blue-400 p-4 rounded-lg text-sm font-bold text-center mb-4">
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           ✓ Producto actualizado correctamente
         </div>
       )}
 
       {/* Error */}
       {state?.error && (
-        <div className="bg-red-500/10 border border-red-500 text-red-400 p-4 rounded-lg text-sm font-bold text-center mb-4">
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 shadow-sm">
           ⚠️ {state.error}
         </div>
       )}
 
-      {/* Inputs */}
       <div>
-        <label className="block text-sm font-medium text-slate-400">Nombre del producto</label>
+        <label className={labelClasses}>Nombre del producto</label>
         <input 
           name="name" 
           value={productName} 
           onChange={(e) => setProductName(e.target.value)} 
-          className="w-full p-2 mt-1 bg-slate-950 border border-slate-700 rounded text-white" 
+          className={inputClasses} 
           required 
         />
       </div>
 
       <div>
         <div className="flex justify-between items-end mb-1">
-          <label className="block text-sm font-medium text-slate-400">Descripción</label>
+          <label className={labelClasses}>Descripción</label>
           <button 
             type="button" 
             onClick={handleGenerateDescription} 
             disabled={isGenerating || !productName} 
-            className="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded disabled:opacity-50 transition-colors shadow-sm"
+            className="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg font-semibold transition-all shadow-sm disabled:opacity-50 flex items-center gap-1"
           >
-            {isGenerating ? "Generando..." : "✨ Autocompletar con IA"}
+            {isGenerating ? "Generando..." : "✨ Mejorar con IA"}
           </button>
         </div>
         <textarea 
           name="description" 
           value={description} 
           onChange={(e) => setDescription(e.target.value)} 
-          className="w-full p-2 bg-slate-950 border border-slate-700 rounded text-white" 
+          className={`${inputClasses} resize-none`} 
           rows={3} 
         />
       </div>
 
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-400">Precio ($)</label>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className={labelClasses}>Precio ($)</label>
           <input 
             type="number" 
             step="0.01" 
             name="price" 
             defaultValue={product.price} 
-            className="w-full p-2 mt-1 bg-slate-950 border border-slate-700 rounded text-white" 
+            className={inputClasses} 
             required 
           />
         </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-400">Stock disponible</label>
+        <div>
+          <label className={labelClasses}>Stock disponible</label>
           <input 
             type="number" 
             name="stock" 
             defaultValue={product.stock} 
-            className="w-full p-2 mt-1 bg-slate-950 border border-slate-700 rounded text-white" 
+            className={inputClasses} 
             required 
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-400">URL de Imagen</label>
+        <label className={labelClasses}>URL de Imagen</label>
         <input 
           name="imageUrl" 
           type="url" 
           defaultValue={product.imageUrl || ""} 
-          className="w-full p-2 mt-1 bg-slate-950 border border-slate-700 rounded text-white" 
+          className={inputClasses} 
         />
       </div>
 
-      <div className="flex gap-4 pt-6">
+      <div className="flex gap-4 pt-6 border-t border-slate-100">
         <Link 
           href={`/stores/${storeId}`} 
-          className="w-1/3 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded text-center border border-slate-600 transition-colors"
+          className="w-1/3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl text-center border border-slate-300 transition-all shadow-sm hover:shadow-md"
         >
           Volver
         </Link>
         <button 
           type="submit" 
           disabled={isPending} 
-          className="w-2/3 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50"
+          className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-red-500/25 disabled:opacity-50"
         >
           {isPending ? "Guardando..." : "Guardar Cambios"}
         </button>

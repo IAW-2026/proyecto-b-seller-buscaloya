@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     return new Response('Error verificando', { status: 400 })
   }
 
-  // 5. Manage the event based on its type. In this case, we listen for 'user.created' to create a new store in our database.
+  // 5. Manages the event based on its type. In this case, we listen for 'user.created' to create a new store in our database.
   const eventType = evt.type;
 
  if (eventType === 'user.created') {
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
   const primaryEmail = email_addresses?.[0]?.email_address || "";
   const fullName = `${first_name || 'Tienda de'} ${last_name || ''}`.trim();
     
-  // Usamos upsert para evitar errores de duplicidad
+  // Uses the Clerk user ID as the store ID in our database to easily associate the two entities.
   await db.insert(stores)
     .values({
       id: id as string, 

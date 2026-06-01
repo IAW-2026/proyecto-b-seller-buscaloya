@@ -12,7 +12,7 @@ const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth();
 
-  // SI YA ESTÁ LOGUEADO Y ESTÁ EN LA LANDING ('/'), LO DESVIAMOS AL DESTINO
+  // If the user is authenticated and tries to access the root path, redirect them based on their role.
   if (userId && req.nextUrl.pathname === '/') {
     const role = (sessionClaims?.metadata as { role?: string })?.role;
     
@@ -22,12 +22,13 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(new URL(`/stores/${userId}`, req.url));
   }
 
-  // PROTECCIÓN DE RUTAS PRIVADAS
+  // Private routes protection: If the route is not public, ensure the user is authenticated. 
+  //If not, they will be redirected to the sign-in page by Clerk.
   if (!isPublicRoute(req)) {
     await auth.protect();
   }
 
-  // PROTECCIÓN ADMIN
+  // Adin routes protection: If the route is an admin route, check the user's role in the session claims.
   if (isAdminRoute(req)) {
     const role = (sessionClaims?.metadata as { role?: string })?.role;
     if (role !== 'system_admin' && role !== 'admin') {

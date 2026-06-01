@@ -56,7 +56,7 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
     }
   };
 
-  // Clases CSS actualizadas para fondo CLARO (Inputs blancos/grises con texto oscuro)
+  // Tailwind CSS classes for consistent styling of inputs and labels
   const inputClasses = "w-full p-3 mt-1.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 focus:bg-white transition-all shadow-sm";
 
   return (
@@ -126,7 +126,7 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
         />
       </div>  
       
-      {/* --- SECCIÓN NUEVA: MAPBOX MAP INTERACTIVO --- */}
+      {/* --- MAPBOX SECTION --- */}
       <div className="pt-2">
         <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-3">
           Ubicación en el mapa (Hacé clic para posicionar el local)

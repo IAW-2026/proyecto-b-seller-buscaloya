@@ -12,7 +12,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
 
-  //1. Secure the route: only authenticated users can access it.
+  //1. Secures the route: only authenticated users can access it.
   const { userId } = await auth();
 
   if (!userId) {
@@ -21,7 +21,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // 2. Look for the store with the given ID
+    // 2. Looks for the store with the given ID
     const storeData = await db.query.stores.findFirst({
       where: eq(stores.id, id),
     });
@@ -30,13 +30,13 @@ export async function GET(
       return NextResponse.json({ error: "Tienda no encontrada" }, { status: 404 });
     }
 
-    // 2. Get all products that belong to that store
+    // 2. Gets all products that belong to that store
     const storeProducts = await db
       .select()
       .from(products)
       .where(eq(products.storeId, id));
 
-    // 3. Format the response data according to the contract
+    // 3. Formats the response data according to the contract
     const responseData = {
       store_name: storeData.name,
       store_image_url: storeData.imageUrl,

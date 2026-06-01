@@ -39,7 +39,7 @@ export default function EditProductForm({ product, storeId }: { product: any, st
     }
   };
 
-  // Clases de diseño premium alineadas para fondo claro
+  // Tailwind CSS classes for consistent styling of inputs and labels
   const inputClasses = "w-full p-3 mt-1.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 focus:bg-white transition-all shadow-sm";
   const labelClasses = "block text-[11px] font-bold tracking-widest uppercase text-slate-500";
 

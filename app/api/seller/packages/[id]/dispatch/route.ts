@@ -28,7 +28,7 @@ interface DeliveryRequestPayload {
   otp_required: boolean;
 }
 
-// Mock function to simulate the Delivery App API call
+// Mocks function to simulate the Delivery App API call
 async function mockDeliveryRequest(payload: DeliveryRequestPayload) {
   console.log("[MOCK] Petición a Delivery App:", JSON.stringify(payload, null, 2));
   await new Promise((resolve) => setTimeout(resolve, 800));
@@ -42,7 +42,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  //1. Check if the user is authenticated
+  //1. Checks if the user is authenticated
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

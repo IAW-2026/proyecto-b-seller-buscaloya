@@ -29,6 +29,8 @@ El **Módulo Seller** es el portal de autogestión para los comercios adheridos 
 ## Cuentas para testing
 * **Usuario tester:** seller+clerktest@iaw.com (contraseña: iawuser#).
 * **Usuario admin:** admin@iaw.com (contraseña: admin_IAW_2026).
+## Link del sitio 
+* **Link:** https://proyecto-b-seller-buscaloya.vercel.app/
 ## Uso para el testeo
 * **Autenticación:** En la landing page están los botones de **Sign in** y **Sign up**.
 * **Sección página Seller:** Luego de autenticar, el usuario es redirigido a la página principal de Seller.

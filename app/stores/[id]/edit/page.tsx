@@ -14,7 +14,7 @@ export default async function EditStorePage({ params, searchParams }: EditStoreP
   const { id } = await params;
   const resolvedSearchParams = await searchParams;
 
-  // Detect if the onboarding query parameter is present, which can be used to conditionally render
+  // Detects if the onboarding query parameter is present, which can be used to conditionally render
   // content or trigger specific behaviors in the edit form. This is useful for guiding new users through 
   // the editing process if they are coming from an onboarding flow.
   const isOnboarding = resolvedSearchParams.onboarding === "true";
@@ -27,7 +27,7 @@ export default async function EditStorePage({ params, searchParams }: EditStoreP
     .where(eq(stores.id, id))
     .then((res) => res[0]);
 
-  // 3. Handle the case where the store is not found. 
+  // 3. Handles the case where the store is not found. 
   // This is important to avoid errors when trying to render the edit form with undefined data. 
   // We show a simple message indicating that the store was not found.
   if (!store) {
@@ -45,11 +45,11 @@ export default async function EditStorePage({ params, searchParams }: EditStoreP
   return (
     <div className="relative min-h-screen bg-[#0a0a0a] text-white p-6 md:p-12 overflow-hidden flex justify-center items-start">
       
-      {/* Fondo Premium Oscuro (Mismo que el resto de la app) */}
+      {/* Fondo Oscuro (Mismo que el resto de la app) */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-red-600/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-red-900/10 blur-[100px] pointer-events-none" />
 
-      {/* EL CUADRADO BLANCO SUAVIZADO */}
+      {/* CUADRADO BLANCO SUAVIZADO */}
       <div className="relative z-10 w-full max-w-3xl mt-4 md:mt-10 bg-white rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.2)] p-8 md:p-12 text-slate-900">
         
         {/* Etiqueta superior */}

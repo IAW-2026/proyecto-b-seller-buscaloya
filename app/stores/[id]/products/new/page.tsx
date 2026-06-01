@@ -48,7 +48,7 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
     }
   };
 
-  // Clases de diseño unificado premium para fondo claro
+  // Tailwind classes for inputs and labels to maintain consistency across the form
   const inputClasses = "w-full p-3 mt-1.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 focus:bg-white transition-all shadow-sm";
   const labelClasses = "block text-[11px] font-bold tracking-widest uppercase text-slate-500";
 

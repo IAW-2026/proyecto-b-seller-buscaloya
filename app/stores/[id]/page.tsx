@@ -76,7 +76,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
     redirect(`/stores/${storeId}/edit?onboarding=true`);
   }
 
-  // 3. Fetching total count para saber cuántas páginas hay
+  // 3. Fetching the total count of products for pagination
   const totalProductsResult = await db
     .select({ count: count() })
     .from(products)
@@ -84,7 +84,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
   const totalProducts = totalProductsResult[0].count;
   const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
 
-  // 4. Fetching the products paginados
+  // 4. Fetching the products for the current page
   const storeProducts = await db
     .select()
     .from(products)
@@ -95,7 +95,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
   return (
     <div className="relative min-h-screen bg-[#0a0a0a] text-white p-6 md:p-12 overflow-hidden">
       
-      {/* Fondo Premium Oscuro */}
+      {/* Fondo  Oscuro */}
       <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-red-600/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] rounded-full bg-red-900/10 blur-[100px] pointer-events-none" />
 
@@ -133,7 +133,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
           </div>
         </div>
 
-        {/* --- HEADER DE LA TIENDA (Estilo Dark/Tech) --- */}
+        {/* --- HEADER DE LA TIENDA --- */}
         <header className="flex flex-col md:flex-row items-center gap-8 mb-12">
           {storeData.imageUrl && (
             <div className="relative">
@@ -162,7 +162,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
         {/* --- GRID PRINCIPAL --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* EL CUADRADO BLANCO SUAVIZADO (Catálogo) */}
+          {/* EL CUADRADO BLANCO (Catálogo) */}
           <div className="lg:col-span-2 bg-white rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.2)] p-6 md:p-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
               <div>
@@ -200,7 +200,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
                           >
                             ✏️
                           </Link>
-                          {/* El DeleteProductForm resalta bien sobre blanco */}
+                          {/* El DeleteProductForm */}
                           <div className="bg-white/90 rounded-lg shadow-md backdrop-blur-sm">
                              <DeleteProductForm productId={product.id} storeId={storeId} />
                           </div>
@@ -257,7 +257,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
             )}
           </div>
           
-          {/* El espacio restante de lg:grid-cols-3 queda libre para mantener tu estructura original */}
+          {/* El espacio restante de lg:grid-cols-3 queda libre */}
         </div>
       </div>
     </div>

@@ -1,3 +1,8 @@
+/*This is the component responsible for rendering the delete product button in the product list of the store dashboard.
+It receives the product ID and store ID as props, and when the button is clicked,
+it prompts the user for confirmation before proceeding with the deletion.
+If the user confirms, it calls the deleteProductAction function, which handles the deletion logic on the server side. 
+The button is styled with Tailwind CSS classes for a consistent look and feel.*/
 "use client";
 
 import { deleteProductAction } from "@/app/actions/products";

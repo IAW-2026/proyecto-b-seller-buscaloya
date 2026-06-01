@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 export async function deleteStoreAction(formData: FormData) {
   const { sessionClaims } = await auth();
   
-  //Verify that the user has the admin role, otherwise throw an error and prevent the action from executing.
+  //Verifies that the user has the admin role, otherwise throw an error and prevent the action from executing.
   const metadata = sessionClaims?.metadata as { role?: string };
   const role = metadata?.role;
 

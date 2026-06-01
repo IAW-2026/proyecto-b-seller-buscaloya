@@ -10,7 +10,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
-  // 1. Seguridad: Solo usuarios autenticados (Sellers)
+  // 1. Segurity check: Verifies that the user is authenticated before allowing access to the AI generation functionality.
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

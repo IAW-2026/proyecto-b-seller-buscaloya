@@ -34,7 +34,7 @@ export default async function AdminStoresPage({
   return (
     <div className="relative min-h-screen bg-[#0a0a0a] text-white p-6 md:p-12 overflow-hidden">
       
-      {/* Fondo Premium Oscuro */}
+      {/* Fondo Oscuro */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-red-600/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-red-900/10 blur-[100px] pointer-events-none" />
 
@@ -62,12 +62,12 @@ export default async function AdminStoresPage({
           </div>
         </header>
 
-        {/* CONTENEDOR BLANCO (El "Cuadrado" que pediste con esquinas suavizadas) */}
+        {/* CONTENEDOR BLANCO */}
         <div className="bg-white rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
-                {/* Cabecera de tabla gris clara para separar del contenido */}
+                {/* Cabecera de tabla gris clara */}
                 <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-widest border-b border-slate-200">
                   <th className="p-6 font-bold">Nombre de la Tienda</th>
                   <th className="p-6 font-bold">Categoría</th>
@@ -91,7 +91,7 @@ export default async function AdminStoresPage({
                       {store.email}
                     </td>
                     <td className="p-6 flex justify-end gap-3 items-center">
-                      {/* Botón negro para altísimo contraste sobre el blanco */}
+                      {/* Botón negro */}
                       <Link 
                         href={`/stores/${store.id}`}
                         className="inline-flex items-center justify-center bg-slate-900 text-white font-bold text-xs px-4 py-2 rounded-lg transition-transform hover:scale-105 shadow-md hover:shadow-lg"
@@ -100,7 +100,7 @@ export default async function AdminStoresPage({
                       </Link>
                       <form action={deleteStoreAction} className="m-0 flex">
                         <input type="hidden" name="storeId" value={store.id} />
-                        {/* El DeleteButton (rojo) va a destacar perfecto acá */}
+                        {/* DeleteButton (rojo)  */}
                         <DeleteButton />
                       </form>
                     </td>

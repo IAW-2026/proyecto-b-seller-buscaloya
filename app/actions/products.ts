@@ -14,7 +14,7 @@ export async function createProductAction(prevState: any, formData: FormData) {
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   const isAdmin = role === "system_admin" || role === "admin";
 
-  // Extraemos el storeId del formulario
+  // Extracts the storeId  from the form data to verify permissions and identify which store the product belongs to.
   const storeId = formData.get("storeId") as string;
 
   if (!userId) return { success: false, error: "No estás autenticado" };
@@ -23,7 +23,7 @@ export async function createProductAction(prevState: any, formData: FormData) {
     return { success: false, error: "No tienes permiso para agregar productos a esta tienda" };
   }
 
-  // Validación
+  // Validation
   const rawData = Object.fromEntries(formData.entries());
   const validation = productSchema.safeParse(rawData);
 
@@ -75,7 +75,7 @@ export async function updateProductAction(prevState: any, formData: FormData) {
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   const isAdmin = role === "system_admin" || role === "admin";
 
-  // Extraemos IDs del formulario
+  // Extracts the productId and storeId from the form data to verify permissions and identify which product to update.
   const productId = formData.get("productId") as string;
   const storeId = formData.get("storeId") as string;
 
@@ -83,7 +83,7 @@ export async function updateProductAction(prevState: any, formData: FormData) {
     return { success: false, error: "No tienes permiso" };
   }
 
-  // Validación
+  // Validation
   const rawData = Object.fromEntries(formData.entries());
   const validation = productSchema.safeParse(rawData);
 

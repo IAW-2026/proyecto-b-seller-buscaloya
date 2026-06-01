@@ -119,7 +119,7 @@ export async function POST(req: Request) {
     const paymentItems = []; //To build the items array for the Payments App request
     const packagesData = []; //To store package info in memory before inserting into DB and building the response
 
-    // 3. Iterate over the stores in the cart to process each package separately
+    // 3. Iterates over the stores in the cart to process each package separately
     for (const storeCart of cartStores) {
       const { store_id, items } = storeCart;
 
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
 
       if (!storeData) throw new Error(`Tienda ${store_id} no encontrada`);
 
-      // 4.Calculate delivery quote for this package
+      // 4.Calculates delivery quote for this package
      const quote = await mockDeliveryQuote({
         pickup_location: { lat: storeData.lat!, lng: storeData.lng! },
         dropoff_location: { lat: buyer_address.lat, lng: buyer_address.lng }
@@ -140,7 +140,7 @@ export async function POST(req: Request) {
       let packageSubtotal = 0;
       const currentPackageItems = [];
 
-      // 5. Process each item in the package: get product details, calculate subtotals, and prepare data for Payments and DB
+      // 5. Processes each item in the package: get product details, calculate subtotals, and prepare data for Payments and DB
       for (const item of items) {
         const productData = await db.query.products.findFirst({
           where: eq(products.id, item.product_id),
@@ -152,7 +152,7 @@ export async function POST(req: Request) {
         packageSubtotal += itemSubtotal;
         globalSubtotal += itemSubtotal;
 
-        //Build the item structure for the Payments App request
+        //Builds the item structure for the Payments App request
         paymentItems.push({
           product_id: productData.id,
           seller_id: storeData.id,
@@ -162,7 +162,7 @@ export async function POST(req: Request) {
           subtotal: itemSubtotal
         });
 
-        //Build the item structure for the package to be stored in DB and returned in the response
+        //Builds the item structure for the package to be stored in DB and returned in the response
         currentPackageItems.push({
           productId: productData.id,
           productName: productData.name,
@@ -171,7 +171,7 @@ export async function POST(req: Request) {
         });
       }
 
-      //Save the package-level data in memory to later insert into DB and build the response
+      //Saves the package-level data in memory to later insert into DB and build the response
       packagesData.push({
         storeId: storeData.id,
         storeName: storeData.name,
@@ -182,7 +182,7 @@ export async function POST(req: Request) {
 
     const globalTotal = globalSubtotal + globalDeliveryCost;
 
-    // 6.Generate the payment order in the Payments App
+    // 6.Generates the payment order in the Payments App
     const paymentPayload = {
       buyer_id,
       items: paymentItems,
@@ -196,11 +196,11 @@ export async function POST(req: Request) {
     const paymentResponse = await mockPaymentOrder(paymentPayload);
     const globalPaymentOrderId = paymentResponse.order_id;
 
-    // 7. Save the order and package details in the local database
+    // 7. Saves the order and package details in the local database
     const finalPackagesResponse = [];
 
     for (const pkg of packagesData) {
-      // Insert the package and get its ID to then insert the related products
+      // Inserts the package and get its ID to then insert the related products
       const [insertedPackage] = await db.insert(packages).values({
         paymentOrderId: globalPaymentOrderId,
         storeId: pkg.storeId,
@@ -218,10 +218,10 @@ export async function POST(req: Request) {
         priceAtPurchase: item.priceAtPurchase
       }));
 
-      // Insert the items related to this package
+      // Inserts the items related to this package
       await db.insert(packageItems).values(itemsToInsert);
 
-      // Build the package structure for the response to the Buyer App
+      // Builds the package structure for the response to the Buyer App
       finalPackagesResponse.push({
         package_id: insertedPackage.id,
         store_name: pkg.storeName,
@@ -232,7 +232,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // 8. Return the response to the Buyer App according to the defined contract
+    // 8. Returns the response to the Buyer App according to the defined contract
     return NextResponse.json({
       payment_order_id: globalPaymentOrderId,
       amount: globalTotal,

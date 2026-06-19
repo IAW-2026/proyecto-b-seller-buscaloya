@@ -37,9 +37,9 @@ export async function PATCH(
     // 3. Updates the status of all packages that belong to the payment order ID. The new status depends on the value of "status" in the body.
     let newStatus: "PREPARING" | "CANCELLED" = "PREPARING";
 
-    if (status === "PAID") {
+    if (status === "paid") {
       newStatus = "PREPARING";
-    } else if (status === "CANCELLED") {
+    } else if (status === "failed") {
       newStatus = "CANCELLED";
     } else {
       return NextResponse.json({ error: `Estado no reconocido: ${status}` }, { status: 400 });

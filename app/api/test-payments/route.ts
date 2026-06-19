@@ -10,14 +10,14 @@ export async function GET() {
     items: [
       {
         product_id: "prod_111",
-        seller_id: "user_clerk_seller01",
+        seller_id: "user_3EXfUEZrpcfhYrMsy25Ex91n4LO",
         name: "Milanesa napolitana",
         quantity: 2,
         unit_price: 1500.00
       },
       {
         product_id: "prod_222",
-        seller_id: "user_clerk_seller02",
+        seller_id: "user_3ENjcuulvIcy0jODeWhUjat5Bl1",
         name: "Papas fritas",
         quantity: 1,
         unit_price: 800.00

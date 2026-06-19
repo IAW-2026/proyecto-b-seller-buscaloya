@@ -22,27 +22,27 @@ export async function PATCH(
     // 1. Obtains the payment order ID from the URL and the status from the request body
     const { id: paymentOrderIdFromUrl } = await params;
     const body = await req.json();
-    const { payment_order_id, status } = body;
+    const { order_id, status } = body;
 
     // 2. Basic validation: Checks if the status is present in the body
     if (!status) {
       return NextResponse.json({ error: "Falta el estado (status)" }, { status: 400 });
     }
 
-    // Validates that if payment_order_id is provided in the body, it matches the one in the URL
-    if (payment_order_id && payment_order_id !== paymentOrderIdFromUrl) {
+    // Validates that if order_id is provided in the body, it matches the one in the URL
+    if (order_id && order_id !== paymentOrderIdFromUrl) {
       return NextResponse.json({ error: "Mismatch entre URL y Body" }, { status: 400 });
     }
 
     // 3. Updates the status of all packages that belong to the payment order ID. The new status depends on the value of "status" in the body.
     let newStatus: "PREPARING" | "CANCELLED" = "PREPARING";
 
-    if (status === "validado") {
+    if (status === "paid") {
       newStatus = "PREPARING";
-    } else if (status === "rechazado") {
+    } else if (status === "failed") {
       newStatus = "CANCELLED";
     } else {
-      return NextResponse.json({ error: "Estado no reconocido" }, { status: 400 });
+      return NextResponse.json({ error: `Estado no reconocido: ${status}` }, { status: 400 });
     }
 
     // 4. Updates the status of the packages in the database

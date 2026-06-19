@@ -64,9 +64,11 @@ interface PaymentOrderResponse {
 
 // The call POST /deliveries/quote to the Delivery App
 async function requestDeliveryQuote(payload: DeliveryQuoteRequest): Promise<DeliveryQuoteResponse> {
+  // --- CÓDIGO REAL (COMENTADO PARA PROBAR CON BUYER) ---
+  /*
   const deliveryUrl = `${process.env.NEXT_PUBLIC_DELIVERY_APP_URL}/api/deliveries/quote`;
   console.log("[INTEGRATION] Consultando cotización a:", deliveryUrl);
-
+  
   const response = await fetch(deliveryUrl, {
     method: "POST",
     headers: {
@@ -75,21 +77,33 @@ async function requestDeliveryQuote(payload: DeliveryQuoteRequest): Promise<Deli
     },
     body: JSON.stringify(payload)
   });
-
+  
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Error en Delivery App (Cotización): ${errorText}`);
   }
-
+  
   return response.json();
+  */
+
+  // --- HARDCODE PARA PRUEBA CON BUYER ---
+  console.log("[MOCK] Simulando respuesta de Delivery");
+  return {
+    quote_id: `quo_mock_${Math.floor(Math.random() * 1000)}`,
+    estimated_cost_ars: 500.00,
+    estimated_time_minutes: 25
+  };
 }
+
 
 
 // Simulates the call POST /payments/orders to the Payments App
 async function requestPaymentOrder(payload: PaymentOrderRequest): Promise<PaymentOrderResponse> {
+  // --- CÓDIGO REAL (COMENTADO PARA PROBAR CON BUYER) ---
+  /*
   const paymentsUrl = `${process.env.NEXT_PUBLIC_PAYMENTS_APP_URL}/api/payments/orders`;
   console.log("[INTEGRATION] Solicitando orden de pago a:", paymentsUrl);
-
+  
   const response = await fetch(paymentsUrl, {
     method: "POST",
     headers: {
@@ -105,6 +119,17 @@ async function requestPaymentOrder(payload: PaymentOrderRequest): Promise<Paymen
   }
 
   return response.json();
+  */
+
+  // --- HARDCODE PARA PRUEBA CON BUYER ---
+  console.log("[MOCK] Simulando respuesta de Payments");
+  return {
+    order_id: `uuid-pay-${Math.floor(Math.random() * 10000)}`,
+    mp_preference_id: "MP-MOCK-123",
+    status: "payment_pending",
+    total: payload.total,
+    created_at: new Date().toISOString()
+  };
 }
 
 

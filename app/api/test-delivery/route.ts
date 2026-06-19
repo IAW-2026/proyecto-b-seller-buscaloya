@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const deliveryUrl = `${process.env.NEXT_PUBLIC_DELIVERY_APP_URL}/api/deliveries/quote`;
+  const deliveryUrl = `${process.env.DELIVERY_APP_URL}/api/deliveries/quote`;
   console.log("[TEST] Probando conexión a Delivery App:", deliveryUrl);
 
   // Datos de prueba (hardcodeados) para simular una cotización

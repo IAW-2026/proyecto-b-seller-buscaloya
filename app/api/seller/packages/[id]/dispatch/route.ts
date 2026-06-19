@@ -30,7 +30,7 @@ interface DeliveryRequestPayload {
 
 // Mocks function to simulate the Delivery App API call
 async function requestDeliveryAssignment(payload: DeliveryRequestPayload) {
-  const deliveryUrl = `${process.env.NEXT_PUBLIC_DELIVERY_APP_URL}/api/delivery-requests`;
+  const deliveryUrl = `${process.env.DELIVERY_APP_URL}/api/delivery-requests`;
   console.log("[INTEGRATION] Solicitando repartidor a:", deliveryUrl);
 
   const response = await fetch(deliveryUrl, {

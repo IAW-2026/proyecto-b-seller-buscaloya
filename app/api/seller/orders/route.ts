@@ -25,7 +25,6 @@ interface DeliveryQuoteRequest {
 interface DeliveryQuoteResponse {
   quote_id: string;
   estimated_cost_ars: number;
-  estimated_time_minutes: number;
 }
 
 //--- Payment Order Types ---
@@ -80,7 +79,13 @@ async function requestDeliveryQuote(payload: DeliveryQuoteRequest): Promise<Deli
     throw new Error(`Error en Delivery App (Cotización): ${errorText}`);
   }
 
-  return response.json();
+  const json = await response.json();
+  const data = json.data || json;
+  
+  return {
+    quote_id: data.quote_id || crypto.randomUUID(),
+    estimated_cost_ars: typeof data.estimated_cost === 'string' ? parseFloat(data.estimated_cost) : (data.estimated_cost || data.estimated_cost_ars || 0)
+  };
 }
 
 

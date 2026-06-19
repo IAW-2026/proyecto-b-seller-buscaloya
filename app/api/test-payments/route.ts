@@ -4,7 +4,7 @@ export async function GET() {
   const paymentsUrl = `${process.env.PAYMENTS_APP_URL}/api/payments/orders`;
   console.log("[TEST] Probando conexión a Payments App:", paymentsUrl);
 
-  // Datos de prueba (hardcodeados) basados en el contrato
+  // Datos de prueba (hardcodeados) basados en el contrato actualizado
   const testPayload = {
     buyer_id: "user_clerk_abc123",
     items: [
@@ -13,16 +13,14 @@ export async function GET() {
         seller_id: "user_clerk_seller01",
         name: "Milanesa napolitana",
         quantity: 2,
-        unit_price: 1500.00,
-        subtotal: 3000.00
+        unit_price: 1500.00
       },
       {
         product_id: "prod_222",
         seller_id: "user_clerk_seller02",
         name: "Papas fritas",
         quantity: 1,
-        unit_price: 800.00,
-        subtotal: 800.00
+        unit_price: 800.00
       }
     ],
     delivery_address: {
@@ -31,9 +29,9 @@ export async function GET() {
       zip: "1043"
     },
     delivery_cost: 350.00,
-    subtotal: 3800.00,
-    total: 4150.00, // 3800 + 350
-    quote_id: "uuid-cotizacion-de-delivery"
+    total: 4150.00,
+    quote_id: "uuid-cotizacion-de-delivery",
+    store_id: "user_clerk_seller01"
   };
 
   try {

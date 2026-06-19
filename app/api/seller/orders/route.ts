@@ -35,7 +35,6 @@ interface PaymentItem {
   name: string;
   quantity: number;
   unit_price: number;
-  subtotal: number;
 }
 
 interface DeliveryAddress {
@@ -49,9 +48,9 @@ interface PaymentOrderRequest {
   items: PaymentItem[];
   delivery_address: DeliveryAddress;
   delivery_cost: number;
-  subtotal: number;
   total: number;
   quote_id: string;
+  store_id: string;
 }
 
 interface PaymentOrderResponse {
@@ -136,6 +135,7 @@ export async function POST(req: Request) {
     const paymentItems = []; //To build the items array for the Payments App request
     const packagesData = []; //To store package info in memory before inserting into DB and building the response
     const quoteIds = []; //To store quote IDs to send to Payments App
+    const storeIds: string[] = []; //To store store IDs to send to Payments App
 
     // 3. Iterates over the stores in the cart to process each package separately
     for (const storeCart of cartStores) {
@@ -155,6 +155,7 @@ export async function POST(req: Request) {
       });
       globalDeliveryCost += quote.estimated_cost_ars;
       quoteIds.push(quote.quote_id);
+      if (!storeIds.includes(storeData.id)) storeIds.push(storeData.id);
 
       let packageSubtotal = 0;
       const currentPackageItems = [];
@@ -177,8 +178,7 @@ export async function POST(req: Request) {
           seller_id: storeData.id,
           name: productData.name,
           quantity: item.quantity,
-          unit_price: productData.price,
-          subtotal: itemSubtotal
+          unit_price: productData.price
         });
 
         //Builds the item structure for the package to be stored in DB and returned in the response
@@ -207,9 +207,9 @@ export async function POST(req: Request) {
       items: paymentItems,
       delivery_address: buyer_address,
       delivery_cost: globalDeliveryCost,
-      subtotal: globalSubtotal,
       total: globalTotal,
-      quote_id: quoteIds.join(',')
+      quote_id: quoteIds.join(','),
+      store_id: storeIds.join(',')
     };
 
     const paymentResponse = await requestPaymentOrder(paymentPayload);

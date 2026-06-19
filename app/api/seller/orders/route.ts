@@ -64,7 +64,7 @@ interface PaymentOrderResponse {
 
 // The call POST /deliveries/quote to the Delivery App
 async function requestDeliveryQuote(payload: DeliveryQuoteRequest): Promise<DeliveryQuoteResponse> {
-  const deliveryUrl = `${process.env.NEXT_PUBLIC_DELIVERY_APP_URL}/api/deliveries/quote`;
+  const deliveryUrl = `${process.env.DELIVERY_APP_URL}/api/deliveries/quote`;
   console.log("[INTEGRATION] Consultando cotización a:", deliveryUrl);
 
   const response = await fetch(deliveryUrl, {
@@ -90,7 +90,7 @@ async function requestDeliveryQuote(payload: DeliveryQuoteRequest): Promise<Deli
   async function requestPaymentOrder(payload: PaymentOrderRequest): Promise<PaymentOrderResponse> {
     // --- CÓDIGO REAL (COMENTADO PARA PROBAR CON BUYER) ---
     /*
-    const paymentsUrl = `${process.env.NEXT_PUBLIC_PAYMENTS_APP_URL}/api/payments/orders`;
+    const paymentsUrl = `${process.env.PAYMENTS_APP_URL}/api/payments/orders`;
     console.log("[INTEGRATION] Solicitando orden de pago a:", paymentsUrl);
     
     const response = await fetch(paymentsUrl, {

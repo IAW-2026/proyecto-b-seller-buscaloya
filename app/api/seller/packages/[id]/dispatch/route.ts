@@ -29,14 +29,27 @@ interface DeliveryRequestPayload {
 }
 
 // Mocks function to simulate the Delivery App API call
-async function mockDeliveryRequest(payload: DeliveryRequestPayload) {
-  console.log("[MOCK] Petición a Delivery App:", JSON.stringify(payload, null, 2));
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  return {
-    delivery_request_id: `req_${Math.floor(Math.random() * 10000)}`,
-    status: "ACCEPTED_FOR_ASSIGNMENT"
-  };
+async function requestDeliveryAssignment(payload: DeliveryRequestPayload) {
+  const deliveryUrl = `${process.env.NEXT_PUBLIC_DELIVERY_APP_URL}/api/delivery-requests`;
+  console.log("[INTEGRATION] Solicitando repartidor a:", deliveryUrl);
+
+  const response = await fetch(deliveryUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.DELIVERY_API_KEY}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Error en Delivery App (Asignar Repartidor): ${errorText}`);
+  }
+
+  return response.json();
 }
+
 
 export async function POST(
   req: Request,
@@ -90,20 +103,20 @@ export async function POST(
       otp_required: true
     };
 
-    // 5. Calls the mock function to simulate sending the request to the Delivery App and getting a response
-    const deliveryResponse = await mockDeliveryRequest(deliveryPayload);
+    // 5. Calls the function to simulate sending the request to the Delivery App and getting a response
+    const deliveryResponse = await requestDeliveryAssignment(deliveryPayload);
 
     // 6. Updates the package status to "READY_TO_PICKUP" and saves the delivery request ID in the database
     const updated = await db
       .update(packages)
-      .set({ 
+      .set({
         status: "READY_TO_PICKUP",
-        deliveryTripId: deliveryResponse.delivery_request_id 
+        deliveryTripId: deliveryResponse.delivery_request_id
       })
       .where(eq(packages.id, packageId))
       .returning();
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: "Paquete despachado con éxito",
       package: updated[0]
     });

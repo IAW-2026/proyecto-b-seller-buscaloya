@@ -1,5 +1,5 @@
 /*This is the mock implementation of the POST /seller/orders endpoint.
-It simulates the entire flow of processing an order from the Seller App perspective, including:
+It implements the entire flow of processing an order from the Seller App perspective, including:
 - Receiving the order request from the Buyer App
 - Consulting the Delivery App for shipping quotes
 - Consulting the Payments App to create a payment order
@@ -41,7 +41,7 @@ interface PaymentItem {
 interface DeliveryAddress {
   street: string;
   city: string;
-  zip?: string; 
+  zip?: string;
 }
 
 interface PaymentOrderRequest {
@@ -62,35 +62,51 @@ interface PaymentOrderResponse {
   created_at: string;
 }
 
-// Simulates the call POST /deliveries/quote to the Delivery App
-// In a real scenario, the quote would depend on the distance and other factors,
-// but for testing we return fixed values with a random quote_id.
-async function mockDeliveryQuote(payload: DeliveryQuoteRequest): Promise<DeliveryQuoteResponse> {
-  console.log("[MOCK] Request a Delivery App:", JSON.stringify(payload, null, 2));
-  
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  
-  return {
-    quote_id: `quo_mock_${Math.floor(Math.random() * 1000)}`,
-    estimated_cost_ars: 500.00,
-    estimated_time_minutes: 25
-  };
+// The call POST /deliveries/quote to the Delivery App
+async function requestDeliveryQuote(payload: DeliveryQuoteRequest): Promise<DeliveryQuoteResponse> {
+  const deliveryUrl = `${process.env.NEXT_PUBLIC_DELIVERY_APP_URL}/api/deliveries/quote`;
+  console.log("[INTEGRATION] Consultando cotización a:", deliveryUrl);
+
+  const response = await fetch(deliveryUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.DELIVERY_API_KEY}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Error en Delivery App (Cotización): ${errorText}`);
+  }
+
+  return response.json();
 }
 
+
 // Simulates the call POST /payments/orders to the Payments App
-async function mockPaymentOrder(payload: PaymentOrderRequest): Promise<PaymentOrderResponse> {
-  console.log("[MOCK] Request a Payments App:", JSON.stringify(payload, null, 2));
-  
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  
-  return {
-    order_id: `uuid-pay-${Math.floor(Math.random() * 10000)}`,
-    mp_preference_id: "MP-MOCK-123",
-    status: "payment_pending",
-    total: payload.total,
-    created_at: new Date().toISOString()
-  };
+async function requestPaymentOrder(payload: PaymentOrderRequest): Promise<PaymentOrderResponse> {
+  const paymentsUrl = `${process.env.NEXT_PUBLIC_PAYMENTS_APP_URL}/api/payments/orders`;
+  console.log("[INTEGRATION] Solicitando orden de pago a:", paymentsUrl);
+
+  const response = await fetch(paymentsUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.PAYMENTS_API_KEY}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Error en Payments App (Crear Orden): ${errorText}`);
+  }
+
+  return response.json();
 }
+
 
 // Main handler for POST /seller/orders endpoint
 export async function POST(req: Request) {
@@ -118,6 +134,7 @@ export async function POST(req: Request) {
     let globalDeliveryCost = 0;
     const paymentItems = []; //To build the items array for the Payments App request
     const packagesData = []; //To store package info in memory before inserting into DB and building the response
+    const quoteIds = []; //To store quote IDs to send to Payments App
 
     // 3. Iterates over the stores in the cart to process each package separately
     for (const storeCart of cartStores) {
@@ -131,11 +148,12 @@ export async function POST(req: Request) {
       if (!storeData) throw new Error(`Tienda ${store_id} no encontrada`);
 
       // 4.Calculates delivery quote for this package
-     const quote = await mockDeliveryQuote({
+      const quote = await requestDeliveryQuote({
         pickup_location: { lat: storeData.lat!, lng: storeData.lng! },
         dropoff_location: { lat: buyer_address.lat, lng: buyer_address.lng }
       });
       globalDeliveryCost += quote.estimated_cost_ars;
+      quoteIds.push(quote.quote_id);
 
       let packageSubtotal = 0;
       const currentPackageItems = [];
@@ -190,10 +208,10 @@ export async function POST(req: Request) {
       delivery_cost: globalDeliveryCost,
       subtotal: globalSubtotal,
       total: globalTotal,
-      quote_id: "multi-quote-mock" 
+      quote_id: quoteIds.join(',')
     };
 
-    const paymentResponse = await mockPaymentOrder(paymentPayload);
+    const paymentResponse = await requestPaymentOrder(paymentPayload);
     const globalPaymentOrderId = paymentResponse.order_id;
 
     // 7. Saves the order and package details in the local database

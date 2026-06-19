@@ -14,7 +14,7 @@ export async function PATCH(
   const authHeader = req.headers.get("Authorization");
   const token = authHeader?.replace("Bearer ", "");
 
-  if (token !== process.env.NEXT_PUBLIC_SERVICE_TOKEN) {
+  if (token !== process.env.SELLER_API_KEY) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -46,11 +46,13 @@ export async function PATCH(
     }
 
     // 4. Updates the status of the packages in the database
+    console.log("[WEBHOOK] Buscando paquetes con paymentOrderId:", paymentOrderIdFromUrl);
     const updatedPackages = await db
       .update(packages)
       .set({ status: newStatus })
       .where(eq(packages.paymentOrderId, paymentOrderIdFromUrl))
       .returning();
+    console.log("[WEBHOOK] Paquetes actualizados:", updatedPackages.length);
 
     // If no packages were updated, it means the payment order ID was not found in the database
     if (updatedPackages.length === 0) {

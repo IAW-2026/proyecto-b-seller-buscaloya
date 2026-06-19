@@ -38,7 +38,7 @@ export async function PATCH(
     let newStatus: "PREPARING" | "CANCELLED" = "PREPARING";
 
     if (status === "validado") {
-      newStatus = "PREPARING"; 
+      newStatus = "PREPARING";
     } else if (status === "rechazado") {
       newStatus = "CANCELLED";
     } else {

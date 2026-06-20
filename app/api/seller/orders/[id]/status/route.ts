@@ -1,8 +1,20 @@
-/* This is a webhook to receive payment status updates from the Payments App. */
+/* This is a webhook to receive payment status updates from the Payments App. 
+   Updated for Phase 3: Automatic Dispatch upon successful payment. */
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { packages } from "@/db/schema";
+import { packages, stores } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+// Payload interface for the Delivery App
+interface DeliveryRequestPayload {
+  paquete_id: string;
+  requested_by: string;
+  context_mode: string;
+  seller: { seller_id: string; address: string; contact_masked: string; };
+  buyer: { buyer_id: string; address: string; contact_masked: string; };
+  ready_at: string;
+  otp_required: boolean;
+}
 
 export async function PATCH(
   req: Request,
@@ -19,12 +31,12 @@ export async function PATCH(
   }
 
   try {
-    // 1. Obtains the payment order ID from the URL and the status from the request body
+    // 2. Obtains the payment order ID from the URL and the status from the request body
     const { id: paymentOrderIdFromUrl } = await params;
     const body = await req.json();
     const { order_id, status } = body;
 
-    // 2. Basic validation: Checks if the status is present in the body
+    // 3. Basic validation: Checks if the status is present in the body
     if (!status) {
       return NextResponse.json({ error: "Falta el estado (status)" }, { status: 400 });
     }
@@ -34,36 +46,98 @@ export async function PATCH(
       return NextResponse.json({ error: "Mismatch entre URL y Body" }, { status: 400 });
     }
 
-    // 3. Updates the status of all packages that belong to the payment order ID. The new status depends on the value of "status" in the body.
-    let newStatus: "PREPARING" | "CANCELLED" = "PREPARING";
-
-    if (status === "paid") {
-      newStatus = "PREPARING";
-    } else if (status === "failed") {
-      newStatus = "CANCELLED";
-    } else {
-      return NextResponse.json({ error: `Estado no reconocido: ${status}` }, { status: 400 });
-    }
-
-    // 4. Updates the status of the packages in the database
+    // 4. Retrieves the packages associated with the payment order ID, including store information.
     console.log("[WEBHOOK] Buscando paquetes con paymentOrderId:", paymentOrderIdFromUrl);
-    const updatedPackages = await db
-      .update(packages)
-      .set({ status: newStatus })
-      .where(eq(packages.paymentOrderId, paymentOrderIdFromUrl))
-      .returning();
-    console.log("[WEBHOOK] Paquetes actualizados:", updatedPackages.length);
+    const packagesToUpdate = await db.query.packages.findMany({
+      where: eq(packages.paymentOrderId, paymentOrderIdFromUrl),
+      with: { store: true }
+    });
 
-    // If no packages were updated, it means the payment order ID was not found in the database
-    if (updatedPackages.length === 0) {
+    // If no packages were found, it means the payment order ID does not exist in the database
+    if (packagesToUpdate.length === 0) {
       return NextResponse.json({ error: "Orden no encontrada" }, { status: 404 });
     }
 
-    // 5. Returns a success response with the new status
-    return NextResponse.json(
-      { message: `Estado actualizado a ${newStatus} exitosamente` },
-      { status: 200 }
-    );
+    // 5. If the payment failed, updates the status to CANCELLED and stops processing.
+    if (status === "failed") {
+      await db.update(packages)
+        .set({ status: "CANCELLED" })
+        .where(eq(packages.paymentOrderId, paymentOrderIdFromUrl));
+
+      return NextResponse.json({ message: "Orden cancelada por fallo en pago" }, { status: 200 });
+    }
+
+    // 6. IF PAYMENT IS SUCCESSFUL: Automatic Dispatch (McDonald's model).
+    if (status === "paid") {
+      let dispatchedCount = 0;
+
+      for (const pkg of packagesToUpdate) {
+        // Parses buyer address if it's stored as JSON, otherwise uses it as is
+        let formattedBuyerAddress = pkg.buyerAddress;
+        try {
+          const addr = JSON.parse(pkg.buyerAddress);
+          formattedBuyerAddress = `${addr.street}, ${addr.city}`;
+        } catch { /* Keep the original string */ }
+
+        // Builds the payload for the Delivery App according to the contract
+        const deliveryPayload: DeliveryRequestPayload = {
+          paquete_id: pkg.id,
+          requested_by: "seller_automated",
+          context_mode: "FULL_SNAPSHOT",
+          seller: {
+            seller_id: pkg.storeId,
+            address: pkg.store?.address || "Sin dirección",
+            contact_masked: "11****0000"
+          },
+          buyer: {
+            buyer_id: pkg.buyerId,
+            address: formattedBuyerAddress,
+            contact_masked: "11****0000"
+          },
+          ready_at: new Date().toISOString(),
+          otp_required: true
+        };
+
+        // Calls the REAL Delivery App
+        const deliveryUrl = `${process.env.DELIVERY_APP_URL}/api/delivery-requests`;
+        const response = await fetch(deliveryUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.DELIVERY_API_KEY}`
+          },
+          body: JSON.stringify(deliveryPayload)
+        });
+
+        if (response.ok) {
+          const deliveryData = await response.json();
+
+          // Updates the package status to READY_TO_PICKUP and saves the delivery request ID
+          await db.update(packages)
+            .set({
+              status: "READY_TO_PICKUP",
+              deliveryTripId: deliveryData.delivery_request_id
+            })
+            .where(eq(packages.id, pkg.id));
+
+          dispatchedCount++;
+        } else {
+          console.error(`[WEBHOOK] Fallo automático de delivery para el paquete ${pkg.id}`);
+          // If Delivery fails, leaves the package in PREPARING status for manual retry
+          await db.update(packages)
+            .set({ status: "PREPARING" })
+            .where(eq(packages.id, pkg.id));
+        }
+      }
+
+      // 7. Returns a success response with the dispatch summary
+      return NextResponse.json({
+        message: `Pago exitoso. Se enviaron despachos automáticos para ${dispatchedCount} de ${packagesToUpdate.length} paquetes.`
+      }, { status: 200 });
+    }
+
+    // Fallback for unrecognized status
+    return NextResponse.json({ error: `Estado no reconocido: ${status}` }, { status: 400 });
 
   } catch (error: any) {
     console.error("Error en Webhook de Payments:", error);

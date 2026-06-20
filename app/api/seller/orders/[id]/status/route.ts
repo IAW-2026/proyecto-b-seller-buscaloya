@@ -72,30 +72,33 @@ export async function PATCH(
       let dispatchedCount = 0;
 
       for (const pkg of packagesToUpdate) {
+        // Parse buyer data
+        let buyerAddrStr = pkg.buyerAddress;
+        let bX = 5000; // Valor default por si falla
+        let bY = 5000;
         // Parses buyer address if it's stored as JSON, otherwise uses it as is
         let formattedBuyerAddress = pkg.buyerAddress;
         try {
           const addr = JSON.parse(pkg.buyerAddress);
-          formattedBuyerAddress = `${addr.street}, ${addr.city}`;
-        } catch { /* Keep the original string */ }
+          buyerAddrStr = `${addr.street}, ${addr.city}`;
+          bX = addr.lat || 5000;
+          bY = addr.lng || 5000;
+        } catch { /* keeps default */ }
 
         // Builds the payload for the Delivery App according to the contract
-        const deliveryPayload: DeliveryRequestPayload = {
-          paquete_id: pkg.id,
-          requested_by: "seller_automated",
-          context_mode: "FULL_SNAPSHOT",
-          seller: {
-            seller_id: pkg.storeId,
-            address: pkg.store?.address || "Sin dirección",
-            contact_masked: "11****0000"
-          },
-          buyer: {
-            buyer_id: pkg.buyerId,
-            address: formattedBuyerAddress,
-            contact_masked: "11****0000"
-          },
-          ready_at: new Date().toISOString(),
-          otp_required: true
+        const deliveryPayload = {
+          order_id: pkg.id,
+          seller_id: pkg.storeId,
+          seller_name: pkg.store?.name || "Sin nombre",
+          seller_address: pkg.store?.address || "Sin dirección",
+          seller_x: pkg.store?.lat ?? 5000,
+          seller_y: pkg.store?.lng ?? 5000,
+          buyer_id: pkg.buyerId,
+          buyer_name: pkg.buyerName,
+          buyer_phone: pkg.buyerPhone,
+          buyer_address: buyerAddrStr,
+          buyer_x: bX,
+          buyer_y: bY
         };
 
         // Calls the REAL Delivery App
@@ -122,8 +125,8 @@ export async function PATCH(
 
           dispatchedCount++;
         } else {
-          console.error(`[WEBHOOK] Fallo automático de delivery para el paquete ${pkg.id}`);
-          // If Delivery fails, leaves the package in PREPARING status for manual retry
+          const err = await response.text();
+          console.error(`[WEBHOOK] Fallo delivery para ${pkg.id}: ${err}`);
           await db.update(packages)
             .set({ status: "PREPARING" })
             .where(eq(packages.id, pkg.id));

@@ -81,7 +81,7 @@ async function requestDeliveryQuote(payload: DeliveryQuoteRequest): Promise<Deli
 
   const json = await response.json();
   const data = json.data || json;
-  
+
   return {
     quote_id: data.quote_id || crypto.randomUUID(),
     estimated_cost_ars: typeof data.estimated_cost === 'string' ? parseFloat(data.estimated_cost) : (data.estimated_cost || data.estimated_cost_ars || 0)
@@ -124,14 +124,14 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { buyer_id, buyer_address, stores: cartStores } = body;
+    const { buyer_id, buyer_name, buyer_phone, buyer_address, stores: cartStores } = body;
     // 2. Basic validation of the request body and access control: the buyer_id in the request must match
     //the authenticated user's ID.
     if (buyer_id !== userId) {
       return NextResponse.json({ error: "Forbidden: No puedes comprar a nombre de otro usuario" }, { status: 403 });
     }
 
-    if (!buyer_id || !buyer_address || !cartStores || !Array.isArray(cartStores)) {
+    if (!buyer_id || !buyer_name || !buyer_phone || !buyer_address || !cartStores || !Array.isArray(cartStores)) {
       return NextResponse.json({ error: "Estructura del carrito inválida" }, { status: 400 });
     }
 
@@ -229,9 +229,11 @@ export async function POST(req: Request) {
         paymentOrderId: globalPaymentOrderId,
         storeId: pkg.storeId,
         buyerId: buyer_id,
+        buyerName: buyer_name,
+        buyerPhone: buyer_phone,
         buyerAddress: JSON.stringify(buyer_address),
         shippingCost: pkg.shippingCost,
-        status: "PREPARING"
+        status: "PENDING_PAYMENT"
       }).returning();
 
       const itemsToInsert = pkg.items.map(item => ({

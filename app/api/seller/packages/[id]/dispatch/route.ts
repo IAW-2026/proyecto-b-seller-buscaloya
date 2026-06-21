@@ -12,7 +12,7 @@ import { auth } from "@clerk/nextjs/server";
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ packageId: string }> }
 ) {
   // 1. Checks if the user (Seller) is authenticated
   const { userId } = await auth();
@@ -21,7 +21,7 @@ export async function POST(
   }
 
   try {
-    const { id: packageId } = await params;
+    const { packageId } = await params;
 
     // 2. Looks up the package and related store info in the database
     const pkg = await db.query.packages.findFirst({

@@ -1,4 +1,4 @@
-/*This is the mock implementation of the POST /seller/orders endpoint.
+/*This is the implementation of the POST /seller/orders endpoint.
 It implements the entire flow of processing an order from the Seller App perspective, including:
 - Receiving the order request from the Buyer App
 - Consulting the Delivery App for shipping quotes

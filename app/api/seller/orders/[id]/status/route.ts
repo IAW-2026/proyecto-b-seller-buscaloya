@@ -1,5 +1,5 @@
 /* This is a webhook to receive payment status updates from the Payments App. 
-   Updated for Phase 3: Automatic Dispatch upon successful payment. */
+   Updated: Automatic Dispatch upon successful payment. */
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { packages, stores } from "@/db/schema";
@@ -74,7 +74,7 @@ export async function PATCH(
       for (const pkg of packagesToUpdate) {
         // Parse buyer data
         let buyerAddrStr = pkg.buyerAddress;
-        let bX = 5000; // Valor default por si falla
+        let bX = 5000;
         let bY = 5000;
         // Parses buyer address if it's stored as JSON, otherwise uses it as is
         let formattedBuyerAddress = pkg.buyerAddress;
@@ -101,7 +101,7 @@ export async function PATCH(
           buyer_y: bY
         };
 
-        // Calls the REAL Delivery App
+        // Calls the Delivery App
         const deliveryUrl = `${process.env.DELIVERY_APP_URL}/api/delivery-requests`;
         const response = await fetch(deliveryUrl, {
           method: "POST",

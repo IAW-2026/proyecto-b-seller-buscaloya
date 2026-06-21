@@ -2,7 +2,7 @@
 import { db } from "@/db";
 import { stores } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import EditStoreForm from "@/app/components/EditStoreForm"; 
+import EditStoreForm from "@/app/components/EditStoreForm";
 
 interface EditStorePageProps {
   params: Promise<{ id: string }>;
@@ -11,7 +11,7 @@ interface EditStorePageProps {
 
 export default async function EditStorePage({ params, searchParams }: EditStorePageProps) {
   // 1. Solves the promise to get the store ID from the URL parameters
-  const { id } = await params;
+  const { id: storeId } = await params;
   const resolvedSearchParams = await searchParams;
 
   // Detects if the onboarding query parameter is present, which can be used to conditionally render
@@ -24,7 +24,7 @@ export default async function EditStorePage({ params, searchParams }: EditStoreP
   const store = await db
     .select()
     .from(stores)
-    .where(eq(stores.id, id))
+    .where(eq(stores.id, storeId))
     .then((res) => res[0]);
 
   // 3. Handles the case where the store is not found. 
@@ -44,14 +44,14 @@ export default async function EditStorePage({ params, searchParams }: EditStoreP
 
   return (
     <div className="relative min-h-screen bg-[#0a0a0a] text-white p-6 md:p-12 overflow-hidden flex justify-center items-start">
-      
+
       {/* Fondo Oscuro (Mismo que el resto de la app) */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-red-600/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-red-900/10 blur-[100px] pointer-events-none" />
 
       {/* CUADRADO BLANCO SUAVIZADO */}
       <div className="relative z-10 w-full max-w-3xl mt-4 md:mt-10 bg-white rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.2)] p-8 md:p-12 text-slate-900">
-        
+
         {/* Etiqueta superior */}
         <div className="inline-block py-1 px-3 rounded-full border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-bold tracking-widest uppercase mb-6 shadow-sm">
           Modo Edición
@@ -72,9 +72,9 @@ export default async function EditStorePage({ params, searchParams }: EditStoreP
         <h1 className="text-3xl md:text-4xl font-extrabold mb-8 tracking-tighter text-slate-900">
           Configuración: <span className="text-red-600">{store.name}</span>
         </h1>
-        
+
         {/* Pasamos a renderizar el formulario aquí dentro del panel blanco */}
-        <EditStoreForm store={store} storeId={id} />
+        <EditStoreForm store={store} storeId={storeId} />
       </div>
     </div>
   );

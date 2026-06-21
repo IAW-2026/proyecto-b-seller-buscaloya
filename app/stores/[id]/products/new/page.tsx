@@ -17,8 +17,8 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
   const [description, setDescription] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const [state, action, isPending] = useActionState(createProductAction, { 
-    success: false 
+  const [state, action, isPending] = useActionState(createProductAction, {
+    success: false
   });
 
   useEffect(() => {
@@ -54,14 +54,14 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="relative min-h-screen bg-[#0a0a0a] text-white p-6 md:p-12 overflow-hidden flex justify-center items-start">
-      
+
       {/* Luces de fondo de la app */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-red-600/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-red-900/10 blur-[100px] pointer-events-none" />
 
       {/* Panel Blanco Suavizado */}
       <div className="relative z-10 w-full max-w-2xl mt-4 md:mt-10 bg-white rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.2)] p-8 md:p-12 text-slate-900">
-        
+
         <div className="inline-block py-1 px-3 rounded-full border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-bold tracking-widest uppercase mb-6 shadow-sm">
           Inventario
         </div>
@@ -87,85 +87,85 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
               ⚠️ {state.error}
             </div>
           )}
-          
+
           <div>
             <label className={labelClasses}>Nombre del producto</label>
-            <input 
-              name="name" 
-              value={productName} 
-              onChange={(e) => setProductName(e.target.value)} 
-              className={inputClasses} 
+            <input
+              name="name"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              className={inputClasses}
               placeholder="Ej: Hamburguesa Doble Cheddar"
-              required 
+              required
             />
           </div>
 
           <div>
             <div className="flex justify-between items-end mb-1">
               <label className={labelClasses}>Descripción</label>
-              <button 
-                type="button" 
-                onClick={handleGenerateDescription} 
-                disabled={isGenerating || !productName} 
+              <button
+                type="button"
+                onClick={handleGenerateDescription}
+                disabled={isGenerating || !productName}
                 className="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg font-semibold transition-all shadow-sm disabled:opacity-50 flex items-center gap-1"
               >
                 {isGenerating ? "Generando..." : "✨ Completar con IA"}
               </button>
             </div>
-            <textarea 
-              name="description" 
-              value={description} 
-              onChange={(e) => setDescription(e.target.value)} 
-              className={`${inputClasses} resize-none`} 
+            <textarea
+              name="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className={`${inputClasses} resize-none`}
               placeholder="Contanos qué ingredientes trae o detalles del producto..."
-              rows={3} 
+              rows={3}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelClasses}>Precio ($)</label>
-              <input 
-                type="number" 
-                step="0.01" 
-                name="price" 
-                className={inputClasses} 
+              <input
+                type="number"
+                step="0.01"
+                name="price"
+                className={inputClasses}
                 placeholder="0.00"
-                required 
+                required
               />
             </div>
             <div>
               <label className={labelClasses}>Stock disponible</label>
-              <input 
-                type="number" 
-                name="stock" 
-                className={inputClasses} 
+              <input
+                type="number"
+                name="stock"
+                className={inputClasses}
                 placeholder="Ej: 50"
-                required 
+                required
               />
             </div>
           </div>
 
           <div>
             <label className={labelClasses}>URL de Imagen</label>
-            <input 
-              name="imageUrl" 
-              type="url" 
-              placeholder="https://ejemplo.com/producto.jpg" 
-              className={inputClasses} 
+            <input
+              name="imageUrl"
+              type="url"
+              placeholder="https://ejemplo.com/producto.jpg"
+              className={inputClasses}
             />
           </div>
 
           <div className="flex gap-4 pt-6 border-t border-slate-100">
-            <Link 
-              href={`/stores/${storeId}`} 
+            <Link
+              href={`/stores/${storeId}`}
               className="w-1/3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl text-center border border-slate-300 transition-all shadow-sm hover:shadow-md"
             >
               Volver
             </Link>
-            <button 
-              type="submit" 
-              disabled={isPending} 
+            <button
+              type="submit"
+              disabled={isPending}
               className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-red-500/25 disabled:opacity-50"
             >
               {isPending ? "Guardando..." : "Crear Producto"}

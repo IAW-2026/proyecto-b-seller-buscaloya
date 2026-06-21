@@ -2,10 +2,10 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
-  '/api/(.*)', 
-  '/sign-in(.*)', 
-  '/sign-up(.*)', 
-  '/','/stores/(.*)'
+  '/api/(.*)',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/', '/stores/(.*)'
 ]);
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
@@ -15,7 +15,7 @@ export default clerkMiddleware(async (auth, req) => {
   // If the user is authenticated and tries to access the root path, redirect them based on their role.
   if (userId && req.nextUrl.pathname === '/') {
     const role = (sessionClaims?.metadata as { role?: string })?.role;
-    
+
     if (role === 'system_admin' || role === 'admin') {
       return NextResponse.redirect(new URL('/admin/stores', req.url));
     }

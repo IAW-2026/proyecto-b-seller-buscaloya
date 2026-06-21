@@ -17,16 +17,16 @@ import LogoutButton from "@/app/components/LogoutButton";
 //it updates the status of all packages associated with the payment order ID in the database to 
 //either "PREPARING" or "CANCELLED". If the payment order ID is not found, it returns a 404 error.
 interface StorePageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
   searchParams: Promise<{ page?: string }>;
 }
 
 export default async function StoreDashboardPage({ params, searchParams }: StorePageProps) {
   const { id: storeId } = await params;
-  const { page } = await searchParams; // <-- Obtenemos la query string
+  const { page } = await searchParams;
   const { userId, sessionClaims } = await auth();
   const user = await currentUser();
-  
+
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   const isAdmin = role === "system_admin" || role === "admin";
   const isOwner = userId === storeId;
@@ -51,7 +51,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
         return (
           <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-center p-6 overflow-hidden">
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-red-600/10 blur-[120px]" />
-            
+
             <div className="relative z-10 bg-white/5 border border-white/10 p-10 rounded-3xl max-w-md shadow-2xl backdrop-blur-xl">
               <span className="text-6xl mb-6 block drop-shadow-lg grayscale opacity-80">🚫</span>
               <h1 className="text-2xl font-black text-red-500 mb-3 tracking-tight">Acceso Denegado</h1>
@@ -94,13 +94,13 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
 
   return (
     <div className="relative min-h-screen bg-[#0a0a0a] text-white p-6 md:p-12 overflow-hidden">
-      
+
       {/* Fondo  Oscuro */}
       <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-red-600/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] rounded-full bg-red-900/10 blur-[100px] pointer-events-none" />
 
       <div className="relative z-10 max-w-6xl mx-auto">
-        
+
         {/* --- BARRA SUPERIOR --- */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4 min-h-[40px]">
           <div>
@@ -110,18 +110,18 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
               </Link>
             )}
           </div>
-          
+
           {/* GRUPO DE BOTONES SUPERIOR DERECHO */}
           <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
             {(isOwner || isAdmin) && (
-              <Link 
-                href={`/stores/${storeId}/edit`} 
+              <Link
+                href={`/stores/${storeId}/edit`}
                 className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 text-white border border-white/10 px-5 py-2.5 rounded-full text-sm font-bold transition-all backdrop-blur-md shadow-lg hover:scale-105"
               >
                 Editar Perfil
               </Link>
             )}
-            
+
             <div className="flex items-center gap-4 p-2 pl-5 pr-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md shadow-lg">
               <span className="text-sm font-medium text-gray-300 hidden md:block tracking-wide">
                 {isAdmin ? "Administrador" : "Propietario"}
@@ -138,10 +138,10 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
           {storeData.imageUrl && (
             <div className="relative">
               <div className="absolute inset-0 bg-red-500/20 blur-xl rounded-full"></div>
-              <img 
-                src={storeData.imageUrl} 
-                alt={storeData.name} 
-                className="relative w-32 h-32 object-cover rounded-3xl border border-white/10 shadow-2xl" 
+              <img
+                src={storeData.imageUrl}
+                alt={storeData.name}
+                className="relative w-32 h-32 object-cover rounded-3xl border border-white/10 shadow-2xl"
               />
             </div>
           )}
@@ -161,7 +161,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
 
         {/* --- GRID PRINCIPAL --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* EL CUADRADO BLANCO (Catálogo) */}
           <div className="lg:col-span-2 bg-white rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.2)] p-6 md:p-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -170,7 +170,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
                 <p className="text-slate-500 font-medium text-sm mt-1">{totalProducts} artículos publicados</p>
               </div>
               {(isOwner || isAdmin) && (
-                <Link 
+                <Link
                   href={`/stores/${storeId}/products/new`}
                   className="bg-slate-900 hover:bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-transform shadow-md hover:shadow-lg hover:scale-105 flex-shrink-0"
                 >
@@ -178,7 +178,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
                 </Link>
               )}
             </div>
-            
+
             {storeProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
                 <span className="text-4xl mb-3 grayscale opacity-60">🍔</span>
@@ -190,10 +190,10 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {storeProducts.map((product) => (
                     <div key={product.id} className="relative bg-slate-50 border border-slate-100 p-5 rounded-2xl flex flex-col justify-between group hover:shadow-xl hover:border-slate-200 transition-all">
-                      
+
                       {(isOwner || isAdmin) && (
                         <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                          <Link 
+                          <Link
                             href={`/stores/${storeId}/products/${product.id}/edit`}
                             className="bg-white/90 hover:bg-white text-slate-900 border border-slate-200 p-2 rounded-lg text-xs shadow-md backdrop-blur-sm transition-all"
                             title="Editar Producto"
@@ -202,7 +202,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
                           </Link>
                           {/* El DeleteProductForm */}
                           <div className="bg-white/90 rounded-lg shadow-md backdrop-blur-sm">
-                             <DeleteProductForm productId={product.id} storeId={storeId} />
+                            <DeleteProductForm productId={product.id} storeId={storeId} />
                           </div>
                         </div>
                       )}
@@ -230,11 +230,10 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
                   <div className="flex justify-between items-center mt-10 pt-6 border-t border-slate-100">
                     <Link
                       href={`/stores/${storeId}?page=${currentPage - 1}`}
-                      className={`px-5 py-2.5 rounded-xl text-sm font-bold border transition-all ${
-                        currentPage <= 1
-                          ? "bg-slate-50 border-slate-200 text-slate-400 pointer-events-none"
-                          : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100 hover:shadow-sm"
-                      }`}
+                      className={`px-5 py-2.5 rounded-xl text-sm font-bold border transition-all ${currentPage <= 1
+                        ? "bg-slate-50 border-slate-200 text-slate-400 pointer-events-none"
+                        : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100 hover:shadow-sm"
+                        }`}
                     >
                       ← Anterior
                     </Link>
@@ -243,11 +242,10 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
                     </span>
                     <Link
                       href={`/stores/${storeId}?page=${currentPage + 1}`}
-                      className={`px-5 py-2.5 rounded-xl text-sm font-bold border transition-all ${
-                        currentPage >= totalPages
-                          ? "bg-slate-50 border-slate-200 text-slate-400 pointer-events-none"
-                          : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100 hover:shadow-sm"
-                      }`}
+                      className={`px-5 py-2.5 rounded-xl text-sm font-bold border transition-all ${currentPage >= totalPages
+                        ? "bg-slate-50 border-slate-200 text-slate-400 pointer-events-none"
+                        : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100 hover:shadow-sm"
+                        }`}
                     >
                       Siguiente →
                     </Link>
@@ -256,8 +254,34 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
               </>
             )}
           </div>
-          
-          {/* El espacio restante de lg:grid-cols-3 queda libre */}
+
+          {/* --- COLUMNA DERECHA (Panel de Gestión de Paquetes) --- */}
+          <div className="lg:col-span-1 flex flex-col gap-6">
+            {(isOwner || isAdmin) && (
+              <div className="bg-slate-900 rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl relative overflow-hidden group">
+                {/* Glow Effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl pointer-events-none"></div>
+
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-5 backdrop-blur-sm border border-white/5">
+                    <span className="text-3xl">📦</span>
+                  </div>
+                  <h3 className="text-xl font-black text-white mb-3">Gestor de Órdenes</h3>
+                  <p className="text-sm text-gray-400 mb-8 leading-relaxed">
+                    Administrá los pedidos entrantes, monitoreá el estado logístico y gestioná los despachos a Delivery.
+                  </p>
+
+                  <Link
+                    href={`/stores/${storeId}/packages`}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-lg hover:shadow-red-500/30 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    Abrir Gestor <span>→</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
     </div>

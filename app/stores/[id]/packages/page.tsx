@@ -139,7 +139,7 @@ export default async function StorePackagesPage({ params }: PackagesPageProps) {
                                         </div>
                                         <div className="flex justify-between text-sm font-bold text-white mt-2 pt-2 border-t border-white/10">
                                             <span>Total a cobrar</span>
-                                            <span className="text-red-400">${orderTotal}</span>
+                                            <span className="text-red-400">${orderTotal.toFixed(2)}</span>
                                         </div>
                                     </div>
 

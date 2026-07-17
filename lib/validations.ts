@@ -11,8 +11,23 @@ export const productSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100, "El nombre no puede exceder los 100 caracteres"),
   description: z.string().max(500, "La descripción no puede exceder los 500 caracteres").optional(),
   // z.coerce transforms the input to a number, which allows us to handle cases where the input is a string (e.g., from a form) and ensures that it is a valid number before applying the min validation.
-  price: z.coerce.number().min(0, "El precio no puede ser negativo").max(100000000, "El precio es demasiado alto"),
-  stock: z.coerce.number().int().min(0, "El stock no puede ser negativo").max(1000000, "El stock es demasiado alto"),
+  price: z.union([z.string(), z.number()])
+    .refine(val => val !== "" && !isNaN(Number(val)), { message: "El precio debe ser un número válido" })
+    .transform(val => Number(val))
+    .pipe(
+      z.number()
+        .min(0, "El precio no puede ser negativo")
+        .max(1000000000, "El precio es demasiado alto")
+    ),
+  stock: z.union([z.string(), z.number()])
+    .refine(val => val !== "" && !isNaN(Number(val)), { message: "El stock debe ser un número válido" })
+    .transform(val => Number(val))
+    .pipe(
+      z.number()
+        .min(0, "El stock no puede ser negativo")
+        .max(1000000, "El stock es demasiado alto")
+        .refine(val => Number.isInteger(val), "El stock debe ser un número entero")
+    ),
   imageUrl: z.string().url("Debe ser una URL válida").or(z.literal("")).optional(),
 });
 

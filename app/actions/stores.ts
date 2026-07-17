@@ -25,7 +25,17 @@ export async function updateStoreAction(formData: FormData, storeId: string) {
     //This ensures that all required fields are present and have the correct format before updating the database. 
     //If the validation fails, an error will be thrown, which is caught in the catch block to provide feedback to the user.
     const rawData = Object.fromEntries(formData.entries());
-    const validatedData = storeSchema.parse(rawData);
+    const validation = storeSchema.safeParse(rawData);
+
+    if (!validation.success) {
+      const fieldErrors = validation.error.flatten().fieldErrors;
+      const errorMessages = Object.entries(fieldErrors)
+        .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
+        .join(" | ");
+      return { success: false, error: errorMessages };
+    }
+
+    const validatedData = validation.data;
 
     // 2. Updates the store information in the database
     await db
@@ -44,8 +54,9 @@ export async function updateStoreAction(formData: FormData, storeId: string) {
     revalidatePath(`/stores/${storeId}`);
     revalidatePath(`/stores/${storeId}/edit`);
     revalidatePath(`/admin/stores`);
+    return { success: true };
   } catch (error) {
     console.error("Error al actualizar la tienda:", error);
-    throw new Error("No se pudo actualizar la tienda. Verifica los campos.");
+    return { success: false, error: "No se pudo actualizar la tienda. Verifica los campos." };
   }
 }

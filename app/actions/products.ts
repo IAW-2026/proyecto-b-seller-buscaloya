@@ -1,5 +1,6 @@
 /*This file contains the server actions related to product management, including creating, updating and deleting products.
-These actions are protected to ensure that only authorized users (store owners or admins) can perform these operations.*/
+These actions are protected to ensure that only authorized users (store owners or admins) can perform these operations.
+FORCE_RECOMPILE_TRIGGER */
 "use server";
 
 import { db } from "@/db";
@@ -29,8 +30,10 @@ export async function createProductAction(prevState: any, formData: FormData) {
 
   if (!validation.success) {
     const fieldErrors = validation.error.flatten().fieldErrors;
-    const firstErrorMessage = Object.values(fieldErrors)[0]?.[0];
-    return { success: false, error: firstErrorMessage ||"Datos inválidos, revisa los campos." };
+    const errorMessages = Object.entries(fieldErrors)
+      .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
+      .join(" | ");
+    return { success: false, error: errorMessages || "Datos inválidos, revisa los campos." };
   }
 
   try {
@@ -89,8 +92,10 @@ export async function updateProductAction(prevState: any, formData: FormData) {
 
   if (!validation.success) {
     const fieldErrors = validation.error.flatten().fieldErrors;
-    const firstErrorMessage = Object.values(fieldErrors)[0]?.[0];
-    return { success: false, error: firstErrorMessage ||"Datos inválidos, revisa los campos." };
+    const errorMessages = Object.entries(fieldErrors)
+      .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
+      .join(" | ");
+    return { success: false, error: errorMessages || "Datos inválidos, revisa los campos." };
   }
 
   try {

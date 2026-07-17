@@ -15,6 +15,9 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
 
   const [productName, setProductName] = useState("");
   const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
   const [state, action, isPending] = useActionState(createProductAction, {
@@ -25,6 +28,9 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
     if (state.success) {
       setProductName("");
       setDescription("");
+      setPrice("");
+      setStock("");
+      setImageUrl("");
     }
   }, [state.success]);
 
@@ -129,6 +135,8 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
                 type="number"
                 step="0.01"
                 name="price"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
                 className={inputClasses}
                 placeholder="0.00"
                 required
@@ -139,6 +147,8 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
               <input
                 type="number"
                 name="stock"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
                 className={inputClasses}
                 placeholder="Ej: 50"
                 required
@@ -151,6 +161,8 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
             <input
               name="imageUrl"
               type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
               placeholder="https://ejemplo.com/producto.jpg"
               className={inputClasses}
             />

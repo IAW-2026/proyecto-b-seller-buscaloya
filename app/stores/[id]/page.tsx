@@ -10,6 +10,7 @@ import AutoRefresh from "@/app/components/AutoRefresh";
 import DeleteProductForm from "@/app/components/DeleteProductForm";
 import { SignOutButton } from "@clerk/nextjs";
 import LogoutButton from "@/app/components/LogoutButton";
+import { Package, UtensilsCrossed, Pencil, ArrowRight, PackageOpen } from "lucide-react";
 
 // Updates the payment status of an order based on the webhook received from the Payments App.
 // The endpoint is protected with a simple token-based authentication to ensure that only authorized 
@@ -181,8 +182,19 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
 
             {storeProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-                <span className="text-4xl mb-3 grayscale opacity-60">🍔</span>
-                <p className="text-slate-500 font-medium">No hay productos en esta página o aún no has cargado ninguno.</p>
+                <div className="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center mb-4">
+                  <PackageOpen className="w-10 h-10 text-slate-300" strokeWidth={1.5} />
+                </div>
+                <h3 className="text-lg font-bold text-slate-700 mb-1">Aún no hay productos</h3>
+                <p className="text-slate-500 font-medium mb-6">No hay productos en esta página o aún no has cargado ninguno.</p>
+                {(isOwner || isAdmin) && (
+                  <Link
+                    href={`/stores/${storeId}/products/new`}
+                    className="bg-slate-900 hover:bg-black text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-transform shadow-md hover:shadow-lg hover:scale-105"
+                  >
+                    Crear tu primer producto
+                  </Link>
+                )}
               </div>
             ) : (
               <>
@@ -195,10 +207,10 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
                         <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                           <Link
                             href={`/stores/${storeId}/products/${product.id}/edit`}
-                            className="bg-white/90 hover:bg-white text-slate-900 border border-slate-200 p-2 rounded-lg text-xs shadow-md backdrop-blur-sm transition-all"
+                            className="bg-white/90 hover:bg-white text-slate-900 border border-slate-200 p-2 rounded-lg shadow-md backdrop-blur-sm transition-all"
                             title="Editar Producto"
                           >
-                            ✏️
+                            <Pencil className="w-4 h-4" />
                           </Link>
                           {/* El DeleteProductForm */}
                           <div className="bg-white/90 rounded-lg shadow-md backdrop-blur-sm">
@@ -264,7 +276,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
 
                 <div className="relative z-10 flex flex-col items-center text-center">
                   <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-5 backdrop-blur-sm border border-white/5">
-                    <span className="text-3xl">📦</span>
+                    <Package className="w-8 h-8 text-white/90" strokeWidth={1.5} />
                   </div>
                   <h3 className="text-xl font-black text-white mb-3">Gestor de Órdenes</h3>
                   <p className="text-sm text-gray-400 mb-8 leading-relaxed">
@@ -275,7 +287,7 @@ export default async function StoreDashboardPage({ params, searchParams }: Store
                     href={`/stores/${storeId}/packages`}
                     className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-lg hover:shadow-red-500/30 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                   >
-                    Abrir Gestor <span>→</span>
+                    Abrir Gestor <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
               </div>

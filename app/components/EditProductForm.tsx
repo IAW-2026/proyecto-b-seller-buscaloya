@@ -6,9 +6,11 @@ go back to the store's page. */
 which sends a request to the /api/seller/generate-description endpoint and updates the description field with the response.*/
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import { updateProductAction } from "@/app/actions/products";
+import { toast } from "sonner";
 import Link from "next/link";
+import { ArrowLeft, Sparkles } from "lucide-react";
 
 export default function EditProductForm({ product, storeId }: { product: any, storeId: string }) {
   const [productName, setProductName] = useState(product.name);
@@ -18,6 +20,14 @@ export default function EditProductForm({ product, storeId }: { product: any, st
   const [state, action, isPending] = useActionState(updateProductAction, { 
     success: false 
   });
+
+  useEffect(() => {
+    if (state?.success) {
+      toast.success("Producto actualizado correctamente");
+    } else if (state?.error) {
+      toast.error(state.error);
+    }
+  }, [state]);
 
   const handleGenerateDescription = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -33,7 +43,7 @@ export default function EditProductForm({ product, storeId }: { product: any, st
       if (!res.ok) throw new Error(data.error);
       setDescription(data.description);
     } catch (error: any) {
-      alert(error.message || "Hubo un error al generar la descripción");
+      toast.error(error.message || "Hubo un error al generar la descripción");
     } finally {
       setIsGenerating(false);
     }
@@ -47,21 +57,6 @@ export default function EditProductForm({ product, storeId }: { product: any, st
     <form action={action} className="space-y-5">
       <input type="hidden" name="productId" value={product.id} />
       <input type="hidden" name="storeId" value={storeId} />
-
-      {/* Éxito */}
-      {state?.success && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          ✓ Producto actualizado correctamente
-        </div>
-      )}
-
-      {/* Error */}
-      {state?.error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 shadow-sm">
-          ⚠️ {state.error}
-        </div>
-      )}
 
       <div>
         <label className={labelClasses}>Nombre del producto</label>
@@ -83,7 +78,7 @@ export default function EditProductForm({ product, storeId }: { product: any, st
             disabled={isGenerating || !productName} 
             className="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg font-semibold transition-all shadow-sm disabled:opacity-50 flex items-center gap-1"
           >
-            {isGenerating ? "Generando..." : "✨ Mejorar con IA"}
+            {isGenerating ? "Generando..." : <><Sparkles className="w-3 h-3" /> Mejorar con IA</>}
           </button>
         </div>
         <textarea 
@@ -132,9 +127,9 @@ export default function EditProductForm({ product, storeId }: { product: any, st
       <div className="flex gap-4 pt-6 border-t border-slate-100">
         <Link 
           href={`/stores/${storeId}`} 
-          className="w-1/3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl text-center border border-slate-300 transition-all shadow-sm hover:shadow-md"
+          className="w-1/3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-300 transition-all shadow-sm hover:shadow-md"
         >
-          Volver
+          <ArrowLeft className="w-4 h-4" /> Volver
         </Link>
         <button 
           type="submit" 

@@ -4,6 +4,7 @@ based on their role (admin or regular seller user).
 If the user is not authenticated, it shows a welcome message and prompts them to log in. */
 "use client";
 import AuthButton from "./components/AuthButton";
+import { motion } from "framer-motion";
 
 export default function Home() {
   return (
@@ -17,7 +18,12 @@ export default function Home() {
           <span className="text-xl font-bold tracking-tighter text-white">BUSCALOYA</span>
         </div>
 
-        <div className="relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative z-10"
+        >
           <div className="inline-block py-1 px-3 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 text-xs font-bold tracking-widest uppercase mb-6">
             Portal de Vendedores
           </div>
@@ -35,7 +41,7 @@ export default function Home() {
           <div className="mt-10 flex gap-4">
             <AuthButton />
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* MITAD DERECHA: Panel Blanco con Imagen Maximizada */}
@@ -46,7 +52,12 @@ export default function Home() {
         </div>
 
         {/* Contenedor */}
-        <div className="relative w-full max-w-xl xl:max-w-2xl aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.12)] transition-transform duration-500 hover:scale-[1.01]">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+          className="relative w-full max-w-xl xl:max-w-2xl aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.12)] transition-transform duration-500 hover:scale-[1.01]"
+        >
             
             <img 
               src="/sellerbuscaloya.jpg" 
@@ -62,7 +73,7 @@ export default function Home() {
                   Online & Operativo
                 </p>
             </div>
-        </div>
+        </motion.div>
 
       </div>
     </main>

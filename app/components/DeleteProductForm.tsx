@@ -7,6 +7,8 @@ The button is styled with Tailwind CSS classes for a consistent look and feel.*/
 
 import { deleteProductAction } from "@/app/actions/products";
 
+import { Trash2 } from "lucide-react";
+
 export default function DeleteProductForm({ productId, storeId }: { productId: string, storeId: string }) {
   const deleteAction = deleteProductAction.bind(null, productId, storeId);
 
@@ -14,7 +16,7 @@ export default function DeleteProductForm({ productId, storeId }: { productId: s
     <form action={deleteAction}>
       <button 
         type="submit" 
-        className="bg-red-600/90 hover:bg-red-500 text-white p-2 rounded-lg text-xs shadow-md backdrop-blur-sm transition-all"
+        className="bg-red-600/90 hover:bg-red-500 text-white p-2 rounded-lg shadow-md backdrop-blur-sm transition-all"
         title="Eliminar Producto"
         onClick={(e) => {
           if (!window.confirm('¿Estás seguro de que querés eliminar este producto?')) {
@@ -22,7 +24,7 @@ export default function DeleteProductForm({ productId, storeId }: { productId: s
           }
         }}
       >
-        🗑️
+        <Trash2 className="w-4 h-4" />
       </button>
     </form>
   );

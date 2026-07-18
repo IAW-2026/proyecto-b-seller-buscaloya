@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Truck } from "lucide-react";
 
 export default function DispatchButton({ packageId }: { packageId: string }) {
     const [isLoading, setIsLoading] = useState(false);
@@ -17,13 +19,13 @@ export default function DispatchButton({ packageId }: { packageId: string }) {
             const data = await res.json();
 
             if (!res.ok) {
-                alert(`Error: ${data.error}`);
+                toast.error(data.error || "Error al despachar el paquete.");
             } else {
-                alert("¡Paquete despachado con éxito!");
+                toast.success("¡Paquete despachado con éxito!");
                 router.refresh(); // Recarga la página para mostrar el nuevo estado
             }
         } catch (error) {
-            alert("Error de red al intentar despachar.");
+            toast.error("Error de red al intentar despachar.");
         } finally {
             setIsLoading(false);
         }
@@ -42,7 +44,7 @@ export default function DispatchButton({ packageId }: { packageId: string }) {
                 <span className="animate-pulse">Despachando...</span>
             ) : (
                 <>
-                    <span>🚚</span> Reintentar Despacho
+                    <Truck className="w-5 h-5" /> Reintentar Despacho
                 </>
             )}
         </button>

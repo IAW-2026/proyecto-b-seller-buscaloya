@@ -3,11 +3,13 @@ It uses the useActionState hook to handle the form submission and display a succ
 The form includes fields for the store's name, email, category, an interactive Mapbox map, and buttons to save changes or go back to the store's page.*/
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import { updateStoreAction } from "@/app/actions/stores";
+import { toast } from "sonner";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import Map, { Marker } from "react-map-gl/mapbox";
-import "mapbox-gl/dist/mapbox-gl.css"; 
+import "mapbox-gl/dist/mapbox-gl.css";
 
 interface EditStoreFormProps {
   store: {
@@ -37,6 +39,14 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
     { success: false }
   );
 
+  useEffect(() => {
+    if (state?.success) {
+      toast.success("Cambios guardados correctamente");
+    } else if (state?.error) {
+      toast.error(state.error);
+    }
+  }, [state]);
+
   // Captures clicks on the map to update the latitude and longitude state, which are then included in the form submission via hidden inputs.
   const handleMapClick = async (event: any) => {
     const { lng: clickedLng, lat: clickedLat } = event.lngLat;
@@ -48,7 +58,7 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
         `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${clickedLng}&latitude=${clickedLat}&access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
       );
       const data = await response.json();
-      
+
       if (data.features && data.features.length > 0) {
         setAddress(data.features[0].properties.full_address);
       }
@@ -66,80 +76,65 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
       <input type="hidden" name="lat" value={lat} />
       <input type="hidden" name="lng" value={lng} />
 
-      {/* Success sign */}
-      {state.success && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Cambios guardados correctamente
-        </div>
-      )}
-
-      {/* Error sign */}
-      {state.error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 shadow-sm">
-          ⚠️ {state.error}
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500">Nombre de la tienda</label>
-          <input 
-            name="name" 
-            defaultValue={store.name} 
+          <input
+            name="name"
+            defaultValue={store.name}
             className={inputClasses}
-            required 
+            required
           />
         </div>
 
         <div>
           <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500">Categoría</label>
-          <input 
-            name="category" 
-            defaultValue={store.category} 
+          <input
+            name="category"
+            defaultValue={store.category}
             className={inputClasses}
-            required 
+            required
           />
         </div>
       </div>
 
       <div>
         <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500">Email Comercial</label>
-        <input 
-          name="email" 
-          defaultValue={store.email} 
+        <input
+          name="email"
+          defaultValue={store.email}
           className={inputClasses}
-          required 
+          required
         />
       </div>
 
       <div>
         <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500">URL de Imagen (Logo/Fachada)</label>
-        <input 
-          name="imageUrl" 
-          defaultValue={store.imageUrl || ""} 
+        <input
+          name="imageUrl"
+          defaultValue={store.imageUrl || ""}
           className={inputClasses}
           placeholder="https://ejemplo.com/imagen.jpg"
         />
       </div>
 
       <div className="pt-2">
-       <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500">Dirección de retiro</label>
-       <input 
-          name="address" 
-          value={address} 
-          onChange={(e) => setAddress(e.target.value)} 
+        <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500">Dirección de retiro</label>
+        <input
+          name="address"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
           placeholder="Ej: San Martín 123, Ciudad"
           className={inputClasses}
         />
-      </div>  
-      
+      </div>
+
       {/* --- MAPBOX SECTION --- */}
       <div className="pt-2">
         <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-3">
           Ubicación en el mapa (Hacé clic para posicionar el local)
         </label>
-        
+
         {/* Contenedor del mapa con borde gris sutil y sombra suave */}
         <div className="h-[350px] w-full rounded-2xl overflow-hidden border-2 border-slate-200 shadow-md relative transition-all hover:border-slate-300">
           <Map
@@ -149,7 +144,7 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
               latitude: lat,
               zoom: 13
             }}
-            mapStyle="mapbox://styles/mapbox/light-v11" 
+            mapStyle="mapbox://styles/mapbox/light-v11"
             onClick={handleMapClick}
             cursor="crosshair"
           >
@@ -164,13 +159,13 @@ export default function EditStoreForm({ store, storeId }: EditStoreFormProps) {
 
       {/* Action buttons */}
       <div className="flex gap-4 pt-6 mt-2 border-t border-slate-100">
-        <Link 
+        <Link
           href={`/stores/${storeId}`}
-          className="w-1/3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl text-center border border-slate-300 transition-all shadow-sm hover:shadow-md"
+          className="w-1/3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-300 transition-all shadow-sm hover:shadow-md"
         >
-          Volver
+          <ArrowLeft className="w-4 h-4" /> Volver
         </Link>
-        <button 
+        <button
           type="submit"
           disabled={isPending}
           className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed"

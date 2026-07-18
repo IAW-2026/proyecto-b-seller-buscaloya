@@ -8,7 +8,9 @@ the new product is associated with the correct store. */
 
 import { useActionState, useState, useEffect, use } from "react";
 import { createProductAction } from "@/app/actions/products";
+import { toast } from "sonner";
 import Link from "next/link";
+import { ArrowLeft, Sparkles } from "lucide-react";
 
 export default function NewProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: storeId } = use(params);
@@ -25,14 +27,17 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
   });
 
   useEffect(() => {
-    if (state.success) {
+    if (state?.success) {
+      toast.success("¡Producto creado exitosamente!");
       setProductName("");
       setDescription("");
       setPrice("");
       setStock("");
       setImageUrl("");
+    } else if (state?.error) {
+      toast.error(state.error);
     }
-  }, [state.success]);
+  }, [state]);
 
   const handleGenerateDescription = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -48,7 +53,7 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
       if (!res.ok) throw new Error(data.error);
       setDescription(data.description);
     } catch (error: any) {
-      alert(error.message || "Hubo un error al generar la descripción");
+      toast.error(error.message || "Hubo un error al generar la descripción");
     } finally {
       setIsGenerating(false);
     }
@@ -79,21 +84,6 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
         <form action={action} className="space-y-5">
           <input type="hidden" name="storeId" value={storeId} />
 
-          {/* Mensaje de Éxito */}
-          {state?.success && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              ✓ Producto creado exitosamente.
-            </div>
-          )}
-
-          {/* Mensaje de Error */}
-          {state?.error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 shadow-sm">
-              ⚠️ {state.error}
-            </div>
-          )}
-
           <div>
             <label className={labelClasses}>Nombre del producto</label>
             <input
@@ -115,7 +105,7 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
                 disabled={isGenerating || !productName}
                 className="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg font-semibold transition-all shadow-sm disabled:opacity-50 flex items-center gap-1"
               >
-                {isGenerating ? "Generando..." : "✨ Completar con IA"}
+                {isGenerating ? "Generando..." : <><Sparkles className="w-3 h-3" /> Completar con IA</>}
               </button>
             </div>
             <textarea
@@ -171,9 +161,9 @@ export default function NewProductPage({ params }: { params: Promise<{ id: strin
           <div className="flex gap-4 pt-6 border-t border-slate-100">
             <Link
               href={`/stores/${storeId}`}
-              className="w-1/3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl text-center border border-slate-300 transition-all shadow-sm hover:shadow-md"
+              className="w-1/3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-300 transition-all shadow-sm hover:shadow-md"
             >
-              Volver
+              <ArrowLeft className="w-4 h-4" /> Volver
             </Link>
             <button
               type="submit"
